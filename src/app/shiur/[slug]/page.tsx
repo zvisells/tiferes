@@ -1,5 +1,3 @@
-import React from 'react';
-import { Shiur } from '@/lib/types';
 import { supabase } from '@/lib/supabaseClient';
 import ShiurDetailContent from './detail-content';
 

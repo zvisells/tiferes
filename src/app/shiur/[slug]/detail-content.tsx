@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React from 'react';
 import { Shiur } from '@/lib/types';
 import AudioPlayer from '@/components/AudioPlayer';
 import TimestampsList from '@/components/TimestampsList';
 import { Tag } from 'lucide-react';
 
 export default function ShiurDetailContent({ shiur }: { shiur: Shiur }) {
-  const audioRef = useRef<HTMLAudioElement>(null);
 
   const handleTimestampClick = (time: string) => {
     const parts = time.split(':').map(Number);

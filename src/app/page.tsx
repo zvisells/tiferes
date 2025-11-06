@@ -85,7 +85,12 @@ export default function HomePage() {
   return (
     <div className="flex flex-col gap-8 p-4 md:p-6 max-w-6xl mx-auto">
       {/* Search & Filter Bar */}
-      <SearchBar onFilterChange={setFilters} />
+      <SearchBar 
+        onSearchChange={(query) => {
+          setFilters(prev => ({ ...prev, searchQuery: query }));
+        }}
+        onFilterChange={setFilters} 
+      />
 
       {/* Results Count */}
       <div className="text-sm text-gray-500">
