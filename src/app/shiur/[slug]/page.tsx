@@ -7,31 +7,37 @@ import AudioPlayer from '@/components/AudioPlayer';
 import TimestampsList from '@/components/TimestampsList';
 import { Tag } from 'lucide-react';
 
-export default function ShiurDetailPage({ params }: { params: { slug: string } }) {
-  const [shiur, setShiur] = useState<Shiur | null>(null);
-  const [loading, setLoading] = useState(true);
+export default async function ShiurDetailPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const resolvedParams = await params;
+
+  // Fetch shiur on server side
+  const { data: shiur, error } = await supabase
+    .from('shiurim')
+    .select('*')
+    .eq('slug', resolvedParams.slug)
+    .single();
+
+  if (error || !shiur) {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-gray-500">
+        Shiur not found.
+      </div>
+    );
+  }
+
+  return (
+    <ShiurDetailContent shiur={shiur} />
+  );
+}
+
+'use client';
+
+function ShiurDetailContent({ shiur }: { shiur: Shiur }) {
   const audioRef = useRef<HTMLAudioElement>(null);
-
-  useEffect(() => {
-    const fetchShiur = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('shiurim')
-          .select('*')
-          .eq('slug', params.slug)
-          .single();
-
-        if (error) throw error;
-        setShiur(data);
-      } catch (error) {
-        console.error('Error fetching shiur:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchShiur();
-  }, [params.slug]);
 
   const handleTimestampClick = (time: string) => {
     const parts = time.split(':').map(Number);
@@ -49,22 +55,6 @@ export default function ShiurDetailPage({ params }: { params: { slug: string } }
       audioElements[0].play();
     }
   };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen text-gray-500">
-        Loading shiur...
-      </div>
-    );
-  }
-
-  if (!shiur) {
-    return (
-      <div className="flex items-center justify-center min-h-screen text-gray-500">
-        Shiur not found.
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col gap-8 p-4 md:p-6 max-w-4xl mx-auto py-8">
