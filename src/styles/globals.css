@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: #ffffff;
+  --color-text: #000000;
+  --color-accent: #001f3f; /* deep navy */
+  --color-hover: rgba(0, 0, 0, 0.08);
+  --font-main: 'Inter', sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-main);
+}
+
+/* Smooth page transitions */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.page-enter {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.page-exit {
+  animation: fadeOut 0.3s ease-in-out;
+}
+
+/* Custom utility classes */
+.audio-card {
+  @apply flex flex-col gap-4 p-4 md:p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow;
+}
+
+.navbar {
+  @apply sticky top-0 z-50 w-full bg-white border-b border-gray-200;
+}
+
+.filter-bar {
+  @apply flex flex-col md:flex-row gap-4 p-4 md:p-6 rounded-2xl bg-gray-50;
+}
+
+.admin-upload-form {
+  @apply flex flex-col gap-6 p-6 rounded-2xl bg-gray-50;
+}
+
+.search-input {
+  @apply w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-custom-accent;
+}
+
+.btn-primary {
+  @apply px-4 py-2 rounded-lg font-semibold bg-custom-accent text-white hover:opacity-90 transition;
+}
+
+.btn-secondary {
+  @apply px-4 py-2 rounded-lg font-semibold border border-black text-black hover:bg-black hover:text-white transition;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-accent);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+  opacity: 0.8;
+}
+

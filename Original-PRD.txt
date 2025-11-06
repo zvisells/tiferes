@@ -1,0 +1,314 @@
+Excellent — everything is now clear. Below is the **complete PRD** for **Tiferes L’Moshe**, structured for execution in Cursor and deployment on Vercel within 90 minutes.
+
+---
+
+# 🧾 Product Requirements Document
+
+**Project:** Tiferes L’Moshe — Online Audio Discourse Archive
+**Goal:** A fast, modern, searchable database of audio shiurim (discourses), with admin upload capabilities, filters, and timestamped topics.
+
+---
+
+## ⚙️ Tech Stack
+
+| Layer               | Technology                        | Purpose                            |
+| ------------------- | --------------------------------- | ---------------------------------- |
+| **Frontend**        | Next.js (App Router) + TypeScript | UI and routing                     |
+| **Styling**         | TailwindCSS with global variables | Design system, Flexbox-only layout |
+| **Storage**         | Cloudflare R2                     | MP3 + image storage                |
+| **Database/Auth**   | Supabase                          | Auth, metadata, topics, timestamps |
+| **Email (Contact)** | Resend API                        | Contact form                       |
+| **Hosting**         | Vercel                            | Production                         |
+| **Versioning**      | GitHub                            | Source control                     |
+
+---
+
+## 🏗️ Core Pages
+
+| Route              | Purpose                                                                 |
+| ------------------ | ----------------------------------------------------------------------- |
+| `/`                | Homepage with featured audio, search + filter bar                       |
+| `/shiur/[slug]`    | Audio detail page with description, timestamps, tags, image, and player |
+| `/about`           | About the Shul and speaker                                              |
+| `/donate`          | External donation link (placeholder)                                    |
+| `/book`            | External buy link (placeholder)                                         |
+| `/contact`         | Contact form powered by Resend                                          |
+| `/admin`           | Login page                                                              |
+| `/admin/dashboard` | Admin panel to upload/manage shiurim                                    |
+
+---
+
+## 🧠 Global UX / Layout Rules
+
+* All **containers use Flexbox**, never CSS grid.
+* All **colors and fonts** use global CSS variables.
+* All **divs and major sections have descriptive class names** (`.navbar`, `.audio-card`, `.filter-bar`, `.admin-upload-form`, etc.).
+* Page transitions fade in/out (via Framer Motion or Tailwind transitions).
+* Sticky top navbar with Donate / Buy buttons.
+* Mobile hamburger includes “Next Discourse” widget at bottom.
+* Use Lucide icons for all iconography
+
+---
+
+## 🎨 Design System
+
+### Global Variables (`globals.css`)
+
+```css
+:root {
+  --color-bg: #ffffff;
+  --color-text: #000000;
+  --color-accent: #001f3f; /* deep navy */
+  --color-hover: rgba(0,0,0,0.08);
+  --font-main: 'Inter', sans-serif;
+}
+```
+
+### Layout Tokens
+
+* Padding: `p-4 md:p-6`
+* Rounded corners: `rounded-2xl`
+* Shadows: `shadow-md hover:shadow-lg`
+* Flexbox default: `flex flex-col gap-4`
+
+---
+
+## 🧩 Component Map
+
+### Global
+
+* **Navbar**
+
+  * Left: site title/logo
+  * Center: navigation links (Home, About, Contact)
+  * Right: `Donate` (outline black), `Buy Now` (filled black)
+  * Mobile: hamburger expands to full list + Next Discourse at bottom
+* **SearchBar**
+
+  * Instant search with debounce (Supabase full-text search)
+  * Filter: Topics (dropdown), Date range
+* **AudioCard**
+
+  * Title, description, tags, duration
+  * “Listen” button opens `/shiur/[slug]`
+* **AudioPlayer**
+
+  * Standard scrub bar, play/pause, volume, timestamp display
+  * Optional “Download” if allowed
+* **TimestampsList**
+
+  * Renders `[topic, time]` pairs under audio player; clicking jumps to that time
+
+### Pages
+
+* **HomePage**
+
+  * Hero: “Tiferes L’Moshe Audio Discourses”
+  * Search bar + Filters
+  * List of AudioCards
+* **ShiurDetailPage**
+
+  * Player + TimestampsList
+  * Tags list + image
+  * Description
+* **About**
+
+  * Image + rich text bio of speaker and Shul info
+* **Contact**
+
+  * Form (name, email, message → Resend API)
+* **AdminDashboard**
+
+  * Upload form:
+
+    * Title (text)
+    * Description (textarea)
+    * Tags (comma-separated)
+    * Image upload (Cloudflare)
+    * Audio file upload (Cloudflare)
+    * Timestamp Topics (add/remove rows: `{topic, hh:mm:ss}`)
+    * Toggle “Allow Download”
+  * List existing shiurim with Edit/Delete
+
+---
+
+## 🧮 Supabase Schema
+
+### `shiurim`
+
+| Column           | Type        | Notes                                      |
+| ---------------- | ----------- | ------------------------------------------ |
+| `id`             | uuid        | Primary key                                |
+| `slug`           | text        | URL slug                                   |
+| `title`          | text        | Required                                   |
+| `description`    | text        | Optional                                   |
+| `tags`           | text[]      | For filters                                |
+| `image_url`      | text        | Optional                                   |
+| `audio_url`      | text        | Cloudflare link                            |
+| `timestamps`     | jsonb       | Array of `{ topic: string, time: string }` |
+| `allow_download` | boolean     | Default false                              |
+| `created_at`     | timestamptz | Default now()                              |
+| `updated_at`     | timestamptz | Auto-update trigger                        |
+| `transcript`     | text        | Optional plain text                        |
+
+### `discourse_schedule`
+
+| Column            | Type        | Notes                    |
+| ----------------- | ----------- | ------------------------ |
+| `id`              | uuid        | Primary key              |
+| `weekday`         | text        | e.g., “Monday”           |
+| `time`            | text        | e.g., “8PM”              |
+| `location`        | text        | Optional                 |
+| `next_occurrence` | timestamptz | Auto-generated next date |
+
+### `admin_users`
+
+| Column          | Type |
+| --------------- | ---- |
+| `email`         | text |
+| `password_hash` | text |
+
+---
+
+## 🧠 TypeScript Interfaces
+
+```ts
+export interface TimestampTopic {
+  topic: string;
+  time: string; // HH:MM:SS
+}
+
+export interface Shiur {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  tags: string[];
+  image_url?: string;
+  audio_url: string;
+  timestamps?: TimestampTopic[];
+  allow_download: boolean;
+  transcript?: string;
+  created_at: string;
+}
+
+export interface DiscourseSchedule {
+  weekday: string;
+  time: string;
+  location?: string;
+  next_occurrence: string;
+}
+```
+
+---
+
+## 🔐 Auth & Admin Flow
+
+* **Login** (email/password via Supabase Auth)
+* **Dashboard**
+
+  * Upload new shiur
+  * Manage existing shiurim
+  * Edit “Next Discourse” schedule
+* **Storage integration**
+
+  * MP3 & image uploaded to Cloudflare R2 → store public URL in Supabase
+* Admin-only route guard with middleware (`middleware.ts` + Supabase session check)
+
+---
+
+## 🔍 Search & Filter Logic
+
+* **Instant search (debounced 300ms)** querying:
+
+  * title, description, tags, topics, transcript
+* **Filters**
+
+  * Topic dropdown (auto-filled from all timestamps’ topics)
+  * Date range picker
+* **Sorting**
+
+  * Default: newest first
+
+---
+
+## 💰 Donate & Buy Buttons
+
+* `Donate` → `/donate` → placeholder external link
+* `Buy Now` → `/book` → placeholder external link
+* Both styled as `rounded-lg font-semibold border border-black px-4 py-2 hover:bg-black hover:text-white transition`
+
+---
+
+## 🕒 Floating Discourse Container
+
+**Location:** bottom of hamburger menu
+**Content:**
+
+> Next Discourse: Monday, 8PM @ [location]
+
+Auto-populates from `discourse_schedule` entry; updates weekly.
+
+---
+
+## 🧾 Contact Form (Resend)
+
+**Endpoint:** `/api/contact`
+**POST** `{ name, email, message }`
+→ sends email via Resend API to [admin@tifereslmoshe.org](mailto:admin@tifereslmoshe.org)
+Response: 200 on success, 400 on fail
+
+---
+
+## 🚀 Deployment Workflow
+
+1. Build project in **Cursor**
+2. Connect **Supabase project** + `.env` with credentials
+3. Configure **Cloudflare R2** + Access Keys
+4. Add **Resend API Key** to environment
+5. Push to **GitHub**, deploy to **Vercel**
+
+---
+
+## ⌨️ Folder Structure
+
+```
+/src
+ ├─ app/
+ │   ├─ page.tsx
+ │   ├─ shiur/[slug]/page.tsx
+ │   ├─ about/page.tsx
+ │   ├─ contact/page.tsx
+ │   ├─ donate/page.tsx
+ │   ├─ book/page.tsx
+ │   └─ admin/
+ │       ├─ page.tsx
+ │       └─ dashboard/page.tsx
+ ├─ components/
+ │   ├─ Navbar.tsx
+ │   ├─ SearchBar.tsx
+ │   ├─ AudioCard.tsx
+ │   ├─ AudioPlayer.tsx
+ │   ├─ TimestampsList.tsx
+ │   ├─ DiscourseWidget.tsx
+ │   └─ AdminForm.tsx
+ ├─ lib/
+ │   ├─ supabaseClient.ts
+ │   ├─ cloudflareUpload.ts
+ │   ├─ resendEmail.ts
+ │   └─ auth.ts
+ ├─ styles/
+ │   ├─ globals.css
+ │   └─ variables.css
+```
+
+---
+
+## 🧩 Key Implementation Notes
+
+* **Flexbox everywhere** (`flex flex-col` or `flex-row` as needed)
+* **All component divs named** (`<div className="audio-card">`)
+* **Tailwind global color tokens** only; local overrides in rare exceptions
+* **Slug auto-generation** from title in admin form
+* **Audio timestamps clickable** → `audioRef.current.currentTime = parsedSeconds(time)`
+* **Instant search** → client-side fetch from Supabase via Edge Function
