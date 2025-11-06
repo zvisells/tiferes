@@ -40,18 +40,20 @@ export default function DiscourseWidget() {
   }
 
   return (
-    <div className="next-discourse flex flex-col gap-2 p-4 bg-custom-accent text-white rounded-lg">
-      <div className="text-sm font-semibold">Next Discourse</div>
-      <div className="flex flex-row items-center gap-2">
-        <Clock size={16} />
-        <span className="text-sm">{discourse.weekday}, {discourse.time}</span>
-      </div>
-      {discourse.location && (
-        <div className="flex flex-row items-center gap-2">
-          <MapPin size={16} />
-          <span className="text-sm">{discourse.location}</span>
+    <div className="next-discourse flex flex-col gap-1 text-white text-xs md:text-sm">
+      <div className="font-semibold">Next Discourse</div>
+      <div className="flex flex-row items-center gap-2 flex-wrap">
+        <div className="flex flex-row items-center gap-1">
+          <Clock size={14} />
+          <span>{discourse.weekday}, {discourse.time}</span>
         </div>
-      )}
+        {discourse.location && (
+          <div className="flex flex-row items-center gap-1">
+            <MapPin size={14} />
+            <span>{discourse.location}</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

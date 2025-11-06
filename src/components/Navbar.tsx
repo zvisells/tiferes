@@ -9,14 +9,12 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <nav className="navbar flex flex-row items-center justify-between p-4 md:p-6 bg-custom-accent">
-      {/* Left: Logo */}
-      <Link href="/" className="text-xl font-bold text-white">
-        Tiferes L'Moshe
-      </Link>
-
-      {/* Center: Navigation (hidden on mobile) */}
-      <div className="hidden md:flex flex-row gap-6">
+    <nav className="navbar flex flex-row items-center justify-between p-4 md:p-6 bg-custom-accent gap-6">
+      {/* Left: Logo + Navigation (desktop) */}
+      <div className="hidden md:flex flex-row items-center gap-6">
+        <Link href="/" className="text-xl font-bold text-white whitespace-nowrap">
+          Tiferes L'Moshe
+        </Link>
         <Link href="/" className="text-white hover:opacity-80 transition">
           Home
         </Link>
@@ -28,8 +26,11 @@ export default function Navbar() {
         </Link>
       </div>
 
-      {/* Right: Buttons (hidden on mobile) */}
-      <div className="hidden md:flex flex-row gap-4">
+      {/* Right: Discourse Info + Buttons (hidden on mobile) */}
+      <div className="hidden md:flex flex-row gap-6 items-center">
+        <div className="hidden lg:block">
+          <DiscourseWidget />
+        </div>
         <Link
           href="/donate"
           className="px-4 py-2 rounded-lg font-semibold border border-white text-white hover:bg-white hover:text-custom-accent transition"
