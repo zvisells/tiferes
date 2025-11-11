@@ -46,6 +46,12 @@ export async function POST(request: NextRequest) {
         const sha256Hash = crypto.createHash('sha256').update(Buffer.from(buffer)).digest('hex');
         console.log('🔐 Content SHA256:', sha256Hash);
 
+        // Create date header in ISO 8601 format (required by R2)
+        const now = new Date();
+        const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, '').replace('Z', 'Z');
+        const dateString = now.toUTCString();
+        console.log('📅 Date:', amzDate);
+
         // Create authorization header (Basic Auth)
         const auth = Buffer.from(`${cfAccessKeyId}:${cfSecretAccessKey}`).toString('base64');
 
@@ -57,6 +63,8 @@ export async function POST(request: NextRequest) {
             'Authorization': `Basic ${auth}`,
             'Content-Type': file.type || 'application/octet-stream',
             'x-amz-content-sha256': sha256Hash,
+            'x-amz-date': amzDate,
+            'Date': dateString,
           },
           body: buffer,
         });
