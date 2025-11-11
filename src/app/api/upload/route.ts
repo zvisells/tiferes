@@ -27,16 +27,25 @@ export async function POST(request: NextRequest) {
     // If all Cloudflare credentials are present, use R2
     if (cfAccessKeyId && cfSecretAccessKey && cfBucketName && cfAccountId && cfR2Url) {
       try {
+        console.log('🔵 Attempting R2 upload with credentials:', {
+          accountId: cfAccountId,
+          bucketName: cfBucketName,
+          r2Url: cfR2Url,
+          filename: filename,
+        });
+
         // Convert file to Buffer
         const buffer = await file.arrayBuffer();
 
         // Construct R2 API URL
         const r2Url = `https://${cfAccountId}.r2.cloudflarestorage.com/${cfBucketName}/${filename}`;
+        console.log('📍 R2 Upload URL:', r2Url);
 
         // Create authorization header (Basic Auth)
         const auth = Buffer.from(`${cfAccessKeyId}:${cfSecretAccessKey}`).toString('base64');
 
         // Upload to R2
+        console.log('🚀 Sending PUT request to R2...');
         const uploadResponse = await fetch(r2Url, {
           method: 'PUT',
           headers: {
@@ -46,20 +55,31 @@ export async function POST(request: NextRequest) {
           body: buffer,
         });
 
+        console.log('📊 R2 Response Status:', uploadResponse.status);
+
         if (!uploadResponse.ok) {
           const errorText = await uploadResponse.text();
-          console.error('R2 Upload Error:', uploadResponse.status, errorText);
-          throw new Error(`Upload to R2 failed: ${uploadResponse.statusText}`);
+          console.error('❌ R2 Upload Error:', uploadResponse.status, errorText);
+          throw new Error(`Upload to R2 failed: ${uploadResponse.statusText} - ${errorText}`);
         }
 
         // Return public URL
         const publicUrl = `${cfR2Url}/${filename}`;
-        console.log('File uploaded to R2:', publicUrl);
+        console.log('✅ File uploaded to R2:', publicUrl);
         return NextResponse.json({ url: publicUrl }, { status: 200 });
       } catch (r2Error) {
-        console.error('R2 upload failed, falling back to local storage:', r2Error);
+        console.error('❌ R2 upload failed:', r2Error);
+        console.error('Error details:', r2Error instanceof Error ? r2Error.message : String(r2Error));
         // Fall through to local storage
       }
+    } else {
+      console.warn('⚠️ Missing R2 credentials, using fallback:', {
+        hasAccessKey: !!cfAccessKeyId,
+        hasSecretKey: !!cfSecretAccessKey,
+        hasBucketName: !!cfBucketName,
+        hasAccountId: !!cfAccountId,
+        hasR2Url: !!cfR2Url,
+      });
     }
 
     // Fallback: Use local storage (development mode)

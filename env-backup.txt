@@ -16,3 +16,15 @@ RESEND_API_KEY=re_Y1Rc4Gf7_7PDP29QSMHp3p5XsMwGJwmpp
 
 # Admin Contact Email
 NEXT_PUBLIC_ADMIN_EMAIL=tiferes@sys.jewedu.com
+
+Ld_QU8uE_XrN_HwN_ohQZkm8RSPJA85AJIblvn7L
+Click to copy
+
+Use the following credentials for S3 clients:
+Access Key ID
+6146de6b05c97e8e3272c7463981a73b
+Click to copy
+
+Secret Access Key
+c09a7c3fb692ea928f2452d42eca1d82e82bc2d87bb432c6cc2bb6aee1ffc358
+Click to copy
