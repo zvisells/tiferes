@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
-import aws4 from 'aws4';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,10 +28,9 @@ export async function POST(request: NextRequest) {
     // If all Cloudflare credentials are present, use R2
     if (cfAccessKeyId && cfSecretAccessKey && cfBucketName && cfAccountId && cfR2Url) {
       try {
-        console.log('🔵 Attempting R2 upload with credentials:', {
+        console.log('🔵 Attempting R2 upload with AWS SDK:', {
           accountId: cfAccountId,
           bucketName: cfBucketName,
-          r2Url: cfR2Url,
           filename: filename,
         });
 
@@ -40,48 +38,27 @@ export async function POST(request: NextRequest) {
         const buffer = await file.arrayBuffer();
         const bufferData = Buffer.from(buffer);
 
-        // Construct R2 API URL
-        const r2Url = `https://${cfAccountId}.r2.cloudflarestorage.com/${cfBucketName}/${filename}`;
-        console.log('📍 R2 Upload URL:', r2Url);
-
-        // Parse URL for aws4 signing
-        const url = new URL(r2Url);
-        const host = url.hostname;
-        const pathname = url.pathname;
-
-        // Create request object for AWS4 signing
-        const request = {
-          method: 'PUT',
-          host: host,
-          path: pathname,
-          headers: {
-            'Content-Type': file.type || 'application/octet-stream',
+        // Create S3 client for R2
+        const s3Client = new S3Client({
+          region: 'auto',
+          credentials: {
+            accessKeyId: cfAccessKeyId,
+            secretAccessKey: cfSecretAccessKey,
           },
-          body: bufferData,
-        };
-
-        // Sign the request with AWS4
-        console.log('🔐 Signing request with AWS4-HMAC-SHA256...');
-        const signedRequest = aws4.sign(request, {
-          accessKeyId: cfAccessKeyId,
-          secretAccessKey: cfSecretAccessKey,
+          endpoint: `https://${cfAccountId}.r2.cloudflarestorage.com`,
         });
 
         // Upload to R2
-        console.log('🚀 Sending PUT request to R2...');
-        const uploadResponse = await fetch(r2Url, {
-          method: 'PUT',
-          headers: signedRequest.headers,
-          body: bufferData,
+        console.log('🚀 Uploading via AWS SDK...');
+        const command = new PutObjectCommand({
+          Bucket: cfBucketName,
+          Key: filename,
+          Body: bufferData,
+          ContentType: file.type || 'application/octet-stream',
         });
 
-        console.log('📊 R2 Response Status:', uploadResponse.status);
-
-        if (!uploadResponse.ok) {
-          const errorText = await uploadResponse.text();
-          console.error('❌ R2 Upload Error:', uploadResponse.status, errorText);
-          throw new Error(`Upload to R2 failed: ${uploadResponse.statusText} - ${errorText}`);
-        }
+        const response = await s3Client.send(command);
+        console.log('✅ Upload successful, ETag:', response.ETag);
 
         // Return public URL
         const publicUrl = `${cfR2Url}/${filename}`;
@@ -119,4 +96,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
