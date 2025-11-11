@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+import aws4 from 'aws4';
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,36 +38,41 @@ export async function POST(request: NextRequest) {
 
         // Convert file to Buffer
         const buffer = await file.arrayBuffer();
+        const bufferData = Buffer.from(buffer);
 
         // Construct R2 API URL
         const r2Url = `https://${cfAccountId}.r2.cloudflarestorage.com/${cfBucketName}/${filename}`;
         console.log('📍 R2 Upload URL:', r2Url);
 
-        // Calculate SHA256 hash for S3 signature
-        const sha256Hash = crypto.createHash('sha256').update(Buffer.from(buffer)).digest('hex');
-        console.log('🔐 Content SHA256:', sha256Hash);
+        // Parse URL for aws4 signing
+        const url = new URL(r2Url);
+        const host = url.hostname;
+        const pathname = url.pathname;
 
-        // Create date header in ISO 8601 format (required by R2)
-        const now = new Date();
-        const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, '').replace('Z', 'Z');
-        const dateString = now.toUTCString();
-        console.log('📅 Date:', amzDate);
+        // Create request object for AWS4 signing
+        const request = {
+          method: 'PUT',
+          host: host,
+          path: pathname,
+          headers: {
+            'Content-Type': file.type || 'application/octet-stream',
+          },
+          body: bufferData,
+        };
 
-        // Create authorization header (Basic Auth)
-        const auth = Buffer.from(`${cfAccessKeyId}:${cfSecretAccessKey}`).toString('base64');
+        // Sign the request with AWS4
+        console.log('🔐 Signing request with AWS4-HMAC-SHA256...');
+        const signedRequest = aws4.sign(request, {
+          accessKeyId: cfAccessKeyId,
+          secretAccessKey: cfSecretAccessKey,
+        });
 
         // Upload to R2
         console.log('🚀 Sending PUT request to R2...');
         const uploadResponse = await fetch(r2Url, {
           method: 'PUT',
-          headers: {
-            'Authorization': `Basic ${auth}`,
-            'Content-Type': file.type || 'application/octet-stream',
-            'x-amz-content-sha256': sha256Hash,
-            'x-amz-date': amzDate,
-            'Date': dateString,
-          },
-          body: buffer,
+          headers: signedRequest.headers,
+          body: bufferData,
         });
 
         console.log('📊 R2 Response Status:', uploadResponse.status);

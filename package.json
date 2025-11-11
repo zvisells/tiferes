@@ -22,7 +22,8 @@
     "@supabase/supabase-js": "^2.38.0",
     "framer-motion": "^10.16.0",
     "lucide-react": "latest",
-    "resend": "^3.0.0"
+    "resend": "^3.0.0",
+    "aws4": "^1.13.0"
   },
   "devDependencies": {
     "eslint": "^8.53.0",
