@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,6 +42,10 @@ export async function POST(request: NextRequest) {
         const r2Url = `https://${cfAccountId}.r2.cloudflarestorage.com/${cfBucketName}/${filename}`;
         console.log('📍 R2 Upload URL:', r2Url);
 
+        // Calculate SHA256 hash for S3 signature
+        const sha256Hash = crypto.createHash('sha256').update(Buffer.from(buffer)).digest('hex');
+        console.log('🔐 Content SHA256:', sha256Hash);
+
         // Create authorization header (Basic Auth)
         const auth = Buffer.from(`${cfAccessKeyId}:${cfSecretAccessKey}`).toString('base64');
 
@@ -51,6 +56,7 @@ export async function POST(request: NextRequest) {
           headers: {
             'Authorization': `Basic ${auth}`,
             'Content-Type': file.type || 'application/octet-stream',
+            'x-amz-content-sha256': sha256Hash,
           },
           body: buffer,
         });
