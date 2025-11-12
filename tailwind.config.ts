@@ -15,7 +15,7 @@ const config: Config = {
       },
       fontFamily: {
         poppins: 'var(--font-poppins)',
-        viaoda: 'var(--font-viaoda)',
+        castoro: 'var(--font-castoro)',
       },
     },
   },

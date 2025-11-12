@@ -1,13 +1,13 @@
 import React from 'react';
 import type { Metadata } from 'next';
-import { Viaoda_Libre, Poppins } from 'next/font/google';
+import { Castoro, Poppins } from 'next/font/google';
 import '@/styles/globals.css';
 import Navbar from '@/components/Navbar';
 
-const viaodaLibre = Viaoda_Libre({
+const castoro = Castoro({
   weight: '400',
   subsets: ['latin'],
-  variable: '--font-viaoda',
+  variable: '--font-castoro',
 });
 
 const poppins = Poppins({
@@ -28,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${viaodaLibre.variable} ${poppins.variable}`}>
+    <html lang="en" className={`${castoro.variable} ${poppins.variable}`}>
       <body className="font-poppins">
         <Navbar />
         <main className="min-h-screen bg-white">

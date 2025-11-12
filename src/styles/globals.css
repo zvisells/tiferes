@@ -31,9 +31,9 @@ body {
   color: var(--color-text);
 }
 
-/* Heading fonts - Viaoda Libre */
+/* Heading fonts - Castoro */
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-viaoda);
+  font-family: var(--font-castoro);
 }
 
 /* Body fonts - Poppins */
