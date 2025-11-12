@@ -109,7 +109,7 @@ export default function HomePage() {
   }, [filters]);
 
   return (
-    <div className="flex flex-col gap-8 p-4 md:p-6 max-w-6xl mx-auto">
+    <div className="flex flex-col gap-8 p-4 md:p-6 max-w-6xl mx-auto w-full">
       {/* Search & Filter Bar */}
       <SearchBar 
         onSearchChange={(query) => {
@@ -130,7 +130,7 @@ export default function HomePage() {
         </div>
       ) : (
         <>
-          <div className="flex flex-row flex-wrap gap-6">
+          <div className="w-full flex flex-row flex-wrap gap-6 justify-center">
             {/* Admin New Shiur Card */}
             {isAdmin && (
               <Link href="/admin/new" className="w-72">
