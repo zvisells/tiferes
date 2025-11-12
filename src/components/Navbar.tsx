@@ -54,16 +54,8 @@ export default function Navbar() {
 
   return (
     <nav className="navbar flex flex-row items-center justify-between p-4 md:p-6 bg-custom-accent gap-6">
-      {/* Left: Logo + Navigation (desktop) */}
-      <div className="hidden md:flex flex-row items-center gap-6">
-        {/* Logo/Branding */}
-        <Link href="/" className="flex flex-row items-center gap-2">
-          <img 
-            src="/logo.png" 
-            alt="Tiferes L'Moshe Logo"
-            className="h-8 w-auto"
-          />
-        </Link>
+      {/* LEFT: Navigation Links (desktop) */}
+      <div className="hidden md:flex flex-row items-center gap-6 flex-1">
         <Link href="/" className="text-white hover:opacity-80 transition">
           Home
         </Link>
@@ -84,8 +76,19 @@ export default function Navbar() {
         </Link>
       </div>
 
-      {/* Right: Discourse Info + Buttons (hidden on mobile) */}
-      <div className="hidden md:flex flex-row gap-6 items-center">
+      {/* CENTER: Logo (desktop) */}
+      <div className="hidden md:flex flex-row items-center justify-center flex-1">
+        <Link href="/" className="flex flex-row items-center gap-2">
+          <img 
+            src="/logo.png" 
+            alt="Tiferes L'Moshe Logo"
+            className="h-16 w-auto"
+          />
+        </Link>
+      </div>
+
+      {/* RIGHT: Discourse Info + Buttons (desktop) */}
+      <div className="hidden md:flex flex-row gap-6 items-center justify-end flex-1">
         <div className="hidden lg:block">
           <DiscourseWidget />
         </div>
