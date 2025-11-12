@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { Shiur } from '@/lib/types';
 import AdminForm from '@/components/AdminForm';
-import { Edit2, Trash2, LogOut } from 'lucide-react';
-import { logoutAdmin } from '@/lib/auth';
+import AdminNavbar from '@/components/AdminNavbar';
+import { Edit2, Trash2 } from 'lucide-react';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -144,28 +144,12 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await logoutAdmin();
-      router.push('/');
-    } catch (error) {
-      console.error('Error logging out:', error);
-    }
-  };
-
   return (
-    <div className="flex flex-col gap-8 p-4 md:p-6 max-w-6xl mx-auto py-8">
-      {/* Header */}
-      <div className="flex flex-row items-center justify-between">
+    <>
+      <AdminNavbar />
+      <div className="flex flex-col gap-8 p-4 md:p-6 max-w-6xl mx-auto py-8">
+        {/* Header */}
         <h1 className="text-4xl font-bold text-custom-accent">Admin Dashboard</h1>
-        <button
-          onClick={handleLogout}
-          className="btn-secondary flex flex-row items-center gap-2"
-        >
-          <LogOut size={18} />
-          Logout
-        </button>
-      </div>
 
       {/* Upload Form */}
       <section className="flex flex-col gap-4">
@@ -224,7 +208,8 @@ export default function AdminDashboardPage() {
           </div>
         )}
       </section>
-    </div>
+      </div>
+    </>
   );
 }
 

@@ -27,6 +27,11 @@ export default function AudioPlayer({
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
 
+  // Debug logging
+  React.useEffect(() => {
+    console.log('🎵 AudioPlayer received audioUrl:', audioUrl);
+  }, [audioUrl]);
+
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
