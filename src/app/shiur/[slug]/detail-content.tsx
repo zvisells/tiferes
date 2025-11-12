@@ -16,7 +16,10 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
     title: initialShiur.title,
     description: initialShiur.description || '',
     tags: initialShiur.tags.join(', '),
+    allow_download: initialShiur.allow_download,
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
 
   // Check if user is admin
   useEffect(() => {
@@ -31,25 +34,58 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
     setIsSaving(true);
     try {
       const tags = editedData.tags.split(',').map((t) => t.trim());
+      const updateData: any = {
+        title: editedData.title,
+        description: editedData.description,
+        tags,
+        allow_download: editedData.allow_download,
+      };
+
+      // Upload new audio file if provided
+      if (audioFile) {
+        const audioFormData = new FormData();
+        audioFormData.append('file', audioFile);
+        audioFormData.append('fileType', 'audio');
+        const audioRes = await fetch('/api/upload', {
+          method: 'POST',
+          body: audioFormData,
+        });
+        if (audioRes.ok) {
+          const audioData = await audioRes.json();
+          updateData.audio_url = audioData.url;
+        }
+      }
+
+      // Upload new image file if provided
+      if (imageFile) {
+        const imageFormData = new FormData();
+        imageFormData.append('file', imageFile);
+        imageFormData.append('fileType', 'image');
+        const imageRes = await fetch('/api/upload', {
+          method: 'POST',
+          body: imageFormData,
+        });
+        if (imageRes.ok) {
+          const imageData = await imageRes.json();
+          updateData.image_url = imageData.url;
+        }
+      }
+
       const { error } = await supabase
         .from('shiurim')
-        .update({
-          title: editedData.title,
-          description: editedData.description,
-          tags,
-        })
+        .update(updateData)
         .eq('id', shiur.id);
 
       if (error) throw error;
 
       setShiur({
         ...shiur,
-        title: editedData.title,
-        description: editedData.description,
-        tags,
+        ...updateData,
       });
 
       setIsEditing(false);
+      setImageFile(null);
+      setAudioFile(null);
       alert('Shiur updated successfully!');
     } catch (error) {
       console.error('Error saving:', error);
@@ -64,7 +100,10 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
       title: shiur.title,
       description: shiur.description || '',
       tags: shiur.tags.join(', '),
+      allow_download: shiur.allow_download,
     });
+    setImageFile(null);
+    setAudioFile(null);
     setIsEditing(false);
   };
 
@@ -166,13 +205,71 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
       )}
 
       {/* Image */}
-      {shiur.image_url && (
+      {!isEditing && shiur.image_url && (
         <div className="w-full h-64 md:h-96 bg-gray-200 rounded-2xl overflow-hidden">
           <img
             src={shiur.image_url}
             alt={shiur.title}
             className="w-full h-full object-cover"
           />
+        </div>
+      )}
+
+      {/* Image Upload (Edit Mode) */}
+      {isEditing && (
+        <div className="flex flex-col gap-2">
+          <label className="font-semibold text-sm">Image (optional - to replace)</label>
+          {shiur.image_url && (
+            <div className="w-full h-32 bg-gray-200 rounded-lg overflow-hidden mb-2">
+              <img
+                src={shiur.image_url}
+                alt={shiur.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+            className="search-input"
+          />
+          {imageFile && <p className="text-xs text-green-600">✓ {imageFile.name}</p>}
+        </div>
+      )}
+
+      {/* Audio Upload (Edit Mode) */}
+      {isEditing && (
+        <div className="flex flex-col gap-2">
+          <label className="font-semibold text-sm">Audio File (optional - to replace)</label>
+          <input
+            type="file"
+            accept="audio/*"
+            onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
+            className="search-input"
+          />
+          {audioFile && <p className="text-xs text-green-600">✓ {audioFile.name}</p>}
+        </div>
+      )}
+
+      {/* Download Toggle (Edit Mode) */}
+      {isEditing && (
+        <div className="flex flex-row items-center gap-2">
+          <input
+            type="checkbox"
+            id="allowDownload"
+            checked={editedData.allow_download}
+            onChange={(e) =>
+              setEditedData((prev) => ({
+                ...prev,
+                allow_download: e.target.checked,
+              }))
+            }
+            className="w-4 h-4"
+          />
+          <label htmlFor="allowDownload" className="text-sm">
+            Allow users to download audio
+          </label>
         </div>
       )}
 

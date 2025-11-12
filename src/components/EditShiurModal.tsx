@@ -24,10 +24,13 @@ export default function EditShiurModal({
     description: shiur.description || '',
     tags: shiur.tags.join(', '),
     timestamps: shiur.timestamps || [],
+    allow_download: shiur.allow_download,
   });
 
   const [newTopic, setNewTopic] = useState('');
   const [newTime, setNewTime] = useState('');
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -58,12 +61,45 @@ export default function EditShiurModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const tags = formState.tags.split(',').map((t) => t.trim());
-    await onSave({
+    const updated: Partial<Shiur> = {
       title: formState.title,
       description: formState.description,
       tags,
       timestamps: formState.timestamps,
-    });
+      allow_download: formState.allow_download,
+    };
+
+    // Upload new audio file if provided
+    if (audioFile) {
+      const audioFormData = new FormData();
+      audioFormData.append('file', audioFile);
+      audioFormData.append('fileType', 'audio');
+      const audioRes = await fetch('/api/upload', {
+        method: 'POST',
+        body: audioFormData,
+      });
+      if (audioRes.ok) {
+        const audioData = await audioRes.json();
+        updated.audio_url = audioData.url;
+      }
+    }
+
+    // Upload new image file if provided
+    if (imageFile) {
+      const imageFormData = new FormData();
+      imageFormData.append('file', imageFile);
+      imageFormData.append('fileType', 'image');
+      const imageRes = await fetch('/api/upload', {
+        method: 'POST',
+        body: imageFormData,
+      });
+      if (imageRes.ok) {
+        const imageData = await imageRes.json();
+        updated.image_url = imageData.url;
+      }
+    }
+
+    await onSave(updated);
   };
 
   if (!isOpen) return null;
@@ -114,6 +150,49 @@ export default function EditShiurModal({
               onChange={handleChange}
               className="search-input"
             />
+          </div>
+
+          {/* Audio File */}
+          <div className="flex flex-col gap-2">
+            <label className="font-semibold text-sm">Audio File (optional - to replace)</label>
+            <input
+              type="file"
+              accept="audio/*"
+              onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
+              className="search-input text-sm"
+            />
+            {audioFile && <p className="text-xs text-green-600">✓ {audioFile.name}</p>}
+          </div>
+
+          {/* Image File */}
+          <div className="flex flex-col gap-2">
+            <label className="font-semibold text-sm">Image (optional - to replace)</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+              className="search-input text-sm"
+            />
+            {imageFile && <p className="text-xs text-green-600">✓ {imageFile.name}</p>}
+          </div>
+
+          {/* Allow Download */}
+          <div className="flex flex-row items-center gap-2">
+            <input
+              type="checkbox"
+              id="allowDownload"
+              checked={formState.allow_download}
+              onChange={(e) =>
+                setFormState((prev) => ({
+                  ...prev,
+                  allow_download: e.target.checked,
+                }))
+              }
+              className="w-4 h-4"
+            />
+            <label htmlFor="allowDownload" className="text-sm">
+              Allow users to download audio
+            </label>
           </div>
 
           {/* Timestamps */}
