@@ -66,8 +66,7 @@ body {
 }
 
 .navbar {
-  @apply sticky z-40 w-full border-b;
-  top: 48px;
+  @apply sticky top-0 z-40 w-full border-b;
 }
 
 .filter-bar {
