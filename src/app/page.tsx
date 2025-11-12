@@ -1,18 +1,30 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import AudioCard from '@/components/AudioCard';
 import SearchBar, { FilterState } from '@/components/SearchBar';
 import { Shiur } from '@/lib/types';
 import { supabase } from '@/lib/supabaseClient';
+import { Plus } from 'lucide-react';
 
 export default function HomePage() {
   const [shiurim, setShiurim] = useState<Shiur[]>([]);
   const [filteredShiurim, setFilteredShiurim] = useState<Shiur[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     searchQuery: '',
   });
+
+  // Check if user is admin
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const { data } = await supabase.auth.getSession();
+      setIsAdmin(!!data.session);
+    };
+    checkAdmin();
+  }, []);
 
   // Fetch all shiurim on mount
   useEffect(() => {
@@ -102,15 +114,30 @@ export default function HomePage() {
         <div className="text-center py-12 text-gray-500">
           Loading shiurim...
         </div>
-      ) : filteredShiurim.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredShiurim.map((shiur) => (
-            <AudioCard key={shiur.id} shiur={shiur} />
-          ))}
-        </div>
       ) : (
-        <div className="text-center py-12 text-gray-500">
-          No shiurim found. Try adjusting your filters.
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Admin New Shiur Card */}
+          {isAdmin && (
+            <Link href="/admin/dashboard">
+              <div className="audio-card cursor-pointer hover:bg-gray-50 transition-colors flex items-center justify-center min-h-96">
+                <div className="text-center flex flex-col items-center gap-4">
+                  <Plus size={48} className="text-custom-accent" />
+                  <span className="text-xl font-semibold text-custom-accent">New Shiur</span>
+                </div>
+              </div>
+            </Link>
+          )}
+
+          {/* Shiurim Cards */}
+          {filteredShiurim.length > 0 ? (
+            filteredShiurim.map((shiur) => (
+              <AudioCard key={shiur.id} shiur={shiur} />
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12 text-gray-500">
+              No shiurim found. Try adjusting your filters.
+            </div>
+          )}
         </div>
       )}
     </div>
