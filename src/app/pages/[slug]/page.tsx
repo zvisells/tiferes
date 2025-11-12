@@ -1,32 +1,46 @@
-import React from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabaseClient';
 import { Page } from '@/lib/types';
 import { ChevronLeft } from 'lucide-react';
 
-async function getPage(slug: string): Promise<Page | null> {
-  try {
-    const { data, error } = await supabase
-      .from('pages')
-      .select('*')
-      .eq('slug', slug)
-      .single();
-
-    if (error) throw error;
-    return data;
-  } catch (error) {
-    console.error('Error fetching page:', error);
-    return null;
-  }
-}
-
-export default async function PageDetailPage({
+export default function PageDetailPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: { slug: string };
 }) {
-  const { slug } = await params;
-  const page = await getPage(slug);
+  const [page, setPage] = useState<Page | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { slug } = params;
+
+  useEffect(() => {
+    const fetchPage = async () => {
+      try {
+        const res = await fetch(`/api/pages/${slug}`);
+        if (res.ok) {
+          const data = await res.json();
+          setPage(data);
+        }
+      } catch (error) {
+        console.error('Error fetching page:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPage();
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="p-4 md:p-6 max-w-4xl mx-auto py-8">
+        <div className="text-center py-12 text-gray-500">
+          Loading...
+        </div>
+      </div>
+    );
+  }
 
   if (!page) {
     return (
@@ -49,8 +63,20 @@ export default async function PageDetailPage({
         Back
       </Link>
 
-      {/* Title */}
-      <h1 className="text-4xl font-bold text-custom-accent">{page.title}</h1>
+      {/* Header with Optional Button */}
+      <div className="flex flex-row items-start justify-between gap-4 flex-wrap">
+        <h1 className="text-4xl font-bold text-custom-accent flex-1">{page.title}</h1>
+        {page.button_text && page.button_link && (
+          <a
+            href={page.button_link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary whitespace-nowrap"
+          >
+            {page.button_text}
+          </a>
+        )}
+      </div>
 
       {/* Image */}
       {page.image_url && (

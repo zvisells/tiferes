@@ -5,6 +5,8 @@ CREATE TABLE IF NOT EXISTS pages (
   title VARCHAR(255) NOT NULL,
   content TEXT NOT NULL,
   image_url VARCHAR(2048),
+  button_text VARCHAR(255),
+  button_link VARCHAR(2048),
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW()
 );

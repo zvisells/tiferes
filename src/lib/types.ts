@@ -36,6 +36,8 @@ export interface Page {
   title: string;
   content: string;
   image_url?: string;
+  button_text?: string;
+  button_link?: string;
   created_at: string;
   updated_at: string;
 }

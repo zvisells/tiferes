@@ -8,9 +8,16 @@ import { supabase } from '@/lib/supabaseClient';
 import { logoutAdmin } from '@/lib/auth';
 import DiscourseWidget from './DiscourseWidget';
 
+interface NavPage {
+  id: string;
+  slug: string;
+  title: string;
+}
+
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [pages, setPages] = useState<NavPage[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -19,6 +26,21 @@ export default function Navbar() {
       setIsAdmin(!!data.session);
     };
     checkAdmin();
+  }, []);
+
+  useEffect(() => {
+    const fetchPages = async () => {
+      try {
+        const res = await fetch('/api/pages');
+        if (res.ok) {
+          const data = await res.json();
+          setPages(data);
+        }
+      } catch (error) {
+        console.error('Error fetching pages:', error);
+      }
+    };
+    fetchPages();
   }, []);
 
   const handleLogout = async () => {
@@ -43,6 +65,15 @@ export default function Navbar() {
         <Link href="/about" className="text-white hover:opacity-80 transition">
           About
         </Link>
+        {pages.map((page) => (
+          <Link
+            key={page.id}
+            href={`/pages/${page.slug}`}
+            className="text-white hover:opacity-80 transition"
+          >
+            {page.title}
+          </Link>
+        ))}
         <Link href="/contact" className="text-white hover:opacity-80 transition">
           Contact
         </Link>
@@ -95,6 +126,16 @@ export default function Navbar() {
           >
             About
           </Link>
+          {pages.map((page) => (
+            <Link
+              key={page.id}
+              href={`/pages/${page.slug}`}
+              onClick={() => setMenuOpen(false)}
+              className="text-white hover:opacity-80 transition"
+            >
+              {page.title}
+            </Link>
+          ))}
           <Link
             href="/contact"
             onClick={() => setMenuOpen(false)}

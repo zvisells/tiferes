@@ -18,6 +18,8 @@ export default function AdminPagesPage() {
     slug: '',
     content: '',
     image_url: '',
+    button_text: '',
+    button_link: '',
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
 
@@ -61,6 +63,8 @@ export default function AdminPagesPage() {
         title: formData.title,
         slug: formData.slug,
         content: formData.content,
+        button_text: formData.button_text || null,
+        button_link: formData.button_link || null,
       };
 
       // Upload image if provided
@@ -97,7 +101,7 @@ export default function AdminPagesPage() {
         if (error) throw error;
       }
 
-      setFormData({ title: '', slug: '', content: '', image_url: '' });
+      setFormData({ title: '', slug: '', content: '', image_url: '', button_text: '', button_link: '' });
       setImageFile(null);
       setIsCreating(false);
       setEditingId(null);
@@ -132,13 +136,15 @@ export default function AdminPagesPage() {
       slug: page.slug,
       content: page.content,
       image_url: page.image_url || '',
+      button_text: page.button_text || '',
+      button_link: page.button_link || '',
     });
     setEditingId(page.id);
     setIsCreating(true);
   };
 
   const handleCancel = () => {
-    setFormData({ title: '', slug: '', content: '', image_url: '' });
+    setFormData({ title: '', slug: '', content: '', image_url: '', button_text: '', button_link: '' });
     setImageFile(null);
     setIsCreating(false);
     setEditingId(null);
@@ -214,6 +220,32 @@ export default function AdminPagesPage() {
               placeholder="Page content..."
               className="search-input min-h-48"
             />
+          </div>
+
+          <div className="border-t border-gray-300 pt-4 flex flex-col gap-4">
+            <h3 className="font-semibold text-sm text-gray-700">Optional Button (Top Right)</h3>
+            
+            <div className="flex flex-col gap-2">
+              <label className="font-semibold text-sm">Button Text</label>
+              <input
+                type="text"
+                value={formData.button_text}
+                onChange={(e) => setFormData({ ...formData, button_text: e.target.value })}
+                placeholder="e.g., Donate Now"
+                className="search-input"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="font-semibold text-sm">Button Link</label>
+              <input
+                type="text"
+                value={formData.button_link}
+                onChange={(e) => setFormData({ ...formData, button_link: e.target.value })}
+                placeholder="e.g., https://example.com"
+                className="search-input"
+              />
+            </div>
           </div>
 
           <div className="flex flex-row gap-2">
