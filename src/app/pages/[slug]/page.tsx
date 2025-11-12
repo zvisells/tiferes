@@ -8,13 +8,23 @@ import { ChevronLeft } from 'lucide-react';
 export default function PageDetailPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
   const [page, setPage] = useState<Page | null>(null);
   const [loading, setLoading] = useState(true);
-  const { slug } = params;
+  const [slug, setSlug] = useState<string | null>(null);
 
   useEffect(() => {
+    const resolveParams = async () => {
+      const resolvedParams = await params;
+      setSlug(resolvedParams.slug);
+    };
+    resolveParams();
+  }, [params]);
+
+  useEffect(() => {
+    if (!slug) return;
+
     const fetchPage = async () => {
       try {
         const res = await fetch(`/api/pages/${slug}`);

@@ -78,22 +78,6 @@ export default function HomePage() {
       );
     }
 
-    // Date range filter
-    if (filters.dateFrom) {
-      const dateFrom = new Date(filters.dateFrom);
-      filtered = filtered.filter(
-        (shiur) => new Date(shiur.created_at) >= dateFrom
-      );
-    }
-
-    if (filters.dateTo) {
-      const dateTo = new Date(filters.dateTo);
-      dateTo.setHours(23, 59, 59, 999);
-      filtered = filtered.filter(
-        (shiur) => new Date(shiur.created_at) <= dateTo
-      );
-    }
-
     setFilteredShiurim(filtered);
   }, [filters, shiurim]);
 
