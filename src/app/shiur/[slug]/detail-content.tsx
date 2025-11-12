@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Shiur } from '@/lib/types';
 import AudioPlayer from '@/components/AudioPlayer';
 import TimestampsList from '@/components/TimestampsList';
+import TimestampPicker from '@/components/TimestampPicker';
 import { supabase } from '@/lib/supabaseClient';
 import { Tag, Edit2, Check, X } from 'lucide-react';
 
@@ -23,6 +24,8 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
   const [editedTimestamps, setEditedTimestamps] = useState(
     initialShiur.timestamps || []
   );
+  const [currentTime, setCurrentTime] = useState(0);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   // Check if user is admin
   useEffect(() => {
@@ -31,6 +34,19 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
       setIsAdmin(!!data.session);
     };
     checkAdmin();
+  }, []);
+
+  // Track audio time for timestamp picker
+  useEffect(() => {
+    const audioElement = document.querySelector('audio');
+    if (!audioElement) return;
+
+    const updateTime = () => {
+      setCurrentTime(audioElement.currentTime);
+    };
+
+    audioElement.addEventListener('timeupdate', updateTime);
+    return () => audioElement.removeEventListener('timeupdate', updateTime);
   }, []);
 
   const handleSave = async () => {
@@ -131,6 +147,10 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
       audioElements[0].currentTime = seconds;
       audioElements[0].play();
     }
+  };
+
+  const handleAddTimestamp = (time: string, topic: string) => {
+    setEditedTimestamps([...editedTimestamps, { time, topic }]);
   };
 
   return (
@@ -288,17 +308,7 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
         <div className="flex flex-col gap-3">
           <div className="flex flex-row items-center justify-between">
             <label className="font-semibold text-sm">Timestamps</label>
-            <button
-              onClick={() =>
-                setEditedTimestamps([
-                  ...editedTimestamps,
-                  { time: '0:00', topic: 'New Topic' },
-                ])
-              }
-              className="text-xs px-3 py-1 rounded bg-custom-accent text-white hover:opacity-90"
-            >
-              + Add
-            </button>
+            <TimestampPicker currentTime={currentTime} onAdd={handleAddTimestamp} />
           </div>
           <div className="flex flex-col gap-2">
             {editedTimestamps.map((ts, idx) => (

@@ -23,6 +23,11 @@ export default function RootLayout({
         </main>
         <footer className="bg-gray-100 text-center p-4 md:p-6 text-sm text-gray-600">
           <p>&copy; 2024 Tiferes L&apos;Moshe. All rights reserved.</p>
+          <p className="mt-2">
+            <a href="/admin/login" className="text-custom-accent hover:underline">
+              Admin Login
+            </a>
+          </p>
         </footer>
       </body>
     </html>

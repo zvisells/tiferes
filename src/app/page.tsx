@@ -6,7 +6,9 @@ import AudioCard from '@/components/AudioCard';
 import SearchBar, { FilterState } from '@/components/SearchBar';
 import { Shiur } from '@/lib/types';
 import { supabase } from '@/lib/supabaseClient';
-import { Plus } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+
+const ITEMS_PER_PAGE = 30;
 
 export default function HomePage() {
   const [shiurim, setShiurim] = useState<Shiur[]>([]);
@@ -16,6 +18,7 @@ export default function HomePage() {
   const [filters, setFilters] = useState<FilterState>({
     searchQuery: '',
   });
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Check if user is admin
   useEffect(() => {
@@ -94,6 +97,17 @@ export default function HomePage() {
     setFilteredShiurim(filtered);
   }, [filters, shiurim]);
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredShiurim.length / ITEMS_PER_PAGE);
+  const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIdx = startIdx + ITEMS_PER_PAGE;
+  const paginatedShiurim = filteredShiurim.slice(startIdx, endIdx);
+
+  // Reset to page 1 when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [filters]);
+
   return (
     <div className="flex flex-col gap-8 p-4 md:p-6 max-w-6xl mx-auto">
       {/* Search & Filter Bar */}
@@ -115,40 +129,61 @@ export default function HomePage() {
           Loading shiurim...
         </div>
       ) : (
-        <div className="flex flex-row flex-wrap gap-6">
-          {/* Admin New Shiur Card */}
-          {isAdmin && (
-            <Link href="/admin/new" className="flex-1 min-w-72">
-              <div className="audio-card cursor-pointer hover:bg-gray-50 transition-colors flex flex-col h-full justify-center items-center">
-                {/* Image placeholder */}
-                <div className="w-full aspect-video bg-gradient-to-br from-gray-300 to-gray-400 rounded-lg flex items-center justify-center mb-4">
-                  <Plus size={48} className="text-custom-accent" />
+        <>
+          <div className="flex flex-row flex-wrap gap-6">
+            {/* Admin New Shiur Card */}
+            {isAdmin && (
+              <Link href="/admin/new" className="flex-1 min-w-72">
+                <div className="audio-card cursor-pointer hover:bg-gray-50 transition-colors flex flex-col h-full justify-center items-center">
+                  {/* Content */}
+                  <h3 className="text-lg font-semibold text-custom-accent text-center">
+                    <Plus size={48} className="text-custom-accent mx-auto mb-4" />
+                    New Shiur
+                  </h3>
+                  <div className="min-h-10"></div>
+                  <div className="min-h-5"></div>
+                  <div className="min-h-8"></div>
                 </div>
-                
-                {/* Content */}
-                <h3 className="text-lg font-semibold text-custom-accent text-center">
-                  New Shiur
-                </h3>
-                <div className="min-h-10"></div>
-                <div className="min-h-5"></div>
-                <div className="min-h-8"></div>
-              </div>
-            </Link>
-          )}
+              </Link>
+            )}
 
-          {/* Shiurim Cards */}
-          {filteredShiurim.length > 0 ? (
-            filteredShiurim.map((shiur) => (
-              <div key={shiur.id} className="flex-1 min-w-72">
-                <AudioCard shiur={shiur} />
+            {/* Shiurim Cards */}
+            {paginatedShiurim.length > 0 ? (
+              paginatedShiurim.map((shiur) => (
+                <div key={shiur.id} className="flex-1 min-w-72">
+                  <AudioCard shiur={shiur} />
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-12 text-gray-500 w-full">
+                No shiurim found. Try adjusting your filters.
               </div>
-            ))
-          ) : (
-            <div className="text-center py-12 text-gray-500 w-full">
-              No shiurim found. Try adjusting your filters.
+            )}
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex flex-row items-center justify-center gap-4 mt-8">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="p-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <span className="text-sm text-gray-600">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronRight size={20} />
+              </button>
             </div>
           )}
-        </div>
+        </>
       )}
     </div>
   );
