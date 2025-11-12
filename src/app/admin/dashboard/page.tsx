@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { Shiur } from '@/lib/types';
 import AdminForm from '@/components/AdminForm';
-import AdminNavbar from '@/components/AdminNavbar';
 import AdminTabs from '@/components/AdminTabs';
 import { Edit2, Trash2, Music, FileText, Calendar } from 'lucide-react';
 
@@ -148,9 +147,7 @@ export default function AdminDashboardPage() {
   ];
 
   return (
-    <>
-      <AdminNavbar />
-      <div className="flex flex-col gap-8 p-4 md:p-6 max-w-6xl mx-auto py-8">
+    <div className="flex flex-col gap-8 p-4 md:p-6 max-w-6xl mx-auto py-8">
         {/* Tabs */}
         <AdminTabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
@@ -232,7 +229,6 @@ export default function AdminDashboardPage() {
             <p className="text-gray-600">Schedule management will be available soon.</p>
           </section>
         )}
-      </div>
-    </>
+    </div>
   );
 }
