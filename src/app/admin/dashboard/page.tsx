@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { Shiur } from '@/lib/types';
 import AdminForm from '@/components/AdminForm';
 import AdminTabs from '@/components/AdminTabs';
+import EditShiurModal from '@/components/EditShiurModal';
 import { Edit2, Trash2, Music, FileText, Calendar } from 'lucide-react';
 
 export default function AdminDashboardPage() {
@@ -14,6 +15,8 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [activeTab, setActiveTab] = useState('shiurim');
+  const [editingShiur, setEditingShiur] = useState<Shiur | null>(null);
+  const [isEditSaving, setIsEditSaving] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -140,6 +143,33 @@ export default function AdminDashboardPage() {
     }
   };
 
+  const handleEdit = (shiur: Shiur) => {
+    setEditingShiur(shiur);
+  };
+
+  const handleSaveEdit = async (updated: Partial<Shiur>) => {
+    if (!editingShiur) return;
+
+    setIsEditSaving(true);
+    try {
+      const { error } = await supabase
+        .from('shiurim')
+        .update(updated)
+        .eq('id', editingShiur.id);
+
+      if (error) throw error;
+
+      await fetchShiurim();
+      setEditingShiur(null);
+      alert('Shiur updated successfully!');
+    } catch (error) {
+      console.error('Error updating shiur:', error);
+      alert('Failed to update shiur.');
+    } finally {
+      setIsEditSaving(false);
+    }
+  };
+
   const tabs = [
     { id: 'shiurim', label: 'Shiurim', icon: <Music size={18} /> },
     { id: 'pages', label: 'Pages', icon: <FileText size={18} /> },
@@ -189,7 +219,10 @@ export default function AdminDashboardPage() {
                           </td>
                           <td className="p-4 text-center">
                             <div className="flex flex-row gap-2 justify-center">
-                              <button className="text-blue-500 hover:text-blue-700">
+                              <button
+                                onClick={() => handleEdit(shiur)}
+                                className="text-blue-500 hover:text-blue-700"
+                              >
                                 <Edit2 size={18} />
                               </button>
                               <button
@@ -228,6 +261,17 @@ export default function AdminDashboardPage() {
             <h2 className="text-2xl font-semibold text-custom-accent">Next Discourse Schedule</h2>
             <p className="text-gray-600">Schedule management will be available soon.</p>
           </section>
+        )}
+
+        {/* Edit Modal */}
+        {editingShiur && (
+          <EditShiurModal
+            shiur={editingShiur}
+            isOpen={!!editingShiur}
+            onClose={() => setEditingShiur(null)}
+            onSave={handleSaveEdit}
+            isLoading={isEditSaving}
+          />
         )}
     </div>
   );
