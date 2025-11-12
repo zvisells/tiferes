@@ -14,7 +14,8 @@ const config: Config = {
         'custom-accent': 'var(--color-accent)',
       },
       fontFamily: {
-        main: 'var(--font-main)',
+        poppins: 'var(--font-poppins)',
+        viaoda: 'var(--font-viaoda)',
       },
     },
   },

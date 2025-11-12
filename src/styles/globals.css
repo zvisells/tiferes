@@ -7,7 +7,6 @@
   --color-text: #000000;
   --color-accent: #001f3f; /* deep navy */
   --color-hover: rgba(0, 0, 0, 0.08);
-  --font-main: 'Inter', sans-serif;
 }
 
 * {
@@ -30,7 +29,16 @@ main {
 body {
   background-color: var(--color-bg);
   color: var(--color-text);
-  font-family: var(--font-main);
+}
+
+/* Heading fonts - Viaoda Libre */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-viaoda);
+}
+
+/* Body fonts - Poppins */
+body, p, span, div, a, button {
+  font-family: var(--font-poppins);
 }
 
 /* Smooth page transitions */

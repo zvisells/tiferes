@@ -1,7 +1,20 @@
 import React from 'react';
 import type { Metadata } from 'next';
+import { Viaoda_Libre, Poppins } from 'next/font/google';
 import '@/styles/globals.css';
 import Navbar from '@/components/Navbar';
+
+const viaodaLibre = Viaoda_Libre({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-viaoda',
+});
+
+const poppins = Poppins({
+  weight: ['400', '500', '600', '700'],
+  subsets: ['latin'],
+  variable: '--font-poppins',
+});
 
 export const metadata: Metadata = {
   title: 'Tiferes L\'Moshe - Audio Discourse Archive',
@@ -15,8 +28,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" className={`${viaodaLibre.variable} ${poppins.variable}`}>
+      <body className="font-poppins">
         <Navbar />
         <main className="min-h-screen bg-white">
           {children}
