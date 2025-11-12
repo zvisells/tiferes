@@ -19,7 +19,7 @@ export default function AdminNavbar() {
   };
 
   return (
-    <div className="bg-green-600 text-white p-3 md:p-4 flex flex-row items-center justify-between">
+    <div className="sticky top-0 z-50 bg-green-600 text-white p-3 md:p-4 flex flex-row items-center justify-between">
       {/* Left: Welcome */}
       <div className="text-sm md:text-base font-semibold">
         Welcome, Admin
