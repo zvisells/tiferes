@@ -56,6 +56,7 @@ export default function Navbar() {
     <nav className="navbar flex flex-row items-center justify-between p-4 md:p-6 bg-custom-accent gap-6">
       {/* Left: Logo + Navigation (desktop) */}
       <div className="hidden md:flex flex-row items-center gap-6">
+        {/* Logo/Branding - Using text logo. To use an image logo, convert logo.pdf to .png or .svg */}
         <Link href="/" className="text-xl font-bold text-white whitespace-nowrap">
           Tiferes L'Moshe
         </Link>
