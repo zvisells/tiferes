@@ -1,3 +1,6 @@
+import Link from 'next/link';
+import { Heart } from 'lucide-react';
+
 export default function AboutPage() {
   return (
     <div className="flex flex-col gap-8 p-4 md:p-6 max-w-4xl mx-auto py-8">
@@ -42,6 +45,17 @@ export default function AboutPage() {
           </p>
         </section>
       </div>
+
+      {/* Donate Button */}
+      <a
+        href="https://abcharity.org/MTL/25"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="btn-primary flex flex-row items-center justify-center gap-2 w-full md:w-fit"
+      >
+        <Heart size={20} />
+        Support Our Shul
+      </a>
     </div>
   );
 }

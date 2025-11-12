@@ -54,12 +54,6 @@ export default function Navbar() {
           <DiscourseWidget />
         </div>
         <Link
-          href="/donate"
-          className="px-4 py-2 rounded-lg font-semibold border border-white text-white hover:bg-white hover:text-custom-accent transition"
-        >
-          Donate
-        </Link>
-        <Link
           href="/book"
           className="px-4 py-2 rounded-lg font-semibold bg-white text-custom-accent hover:opacity-90 transition"
         >
@@ -107,13 +101,6 @@ export default function Navbar() {
             className="text-white hover:opacity-80 transition"
           >
             Contact
-          </Link>
-          <Link
-            href="/donate"
-            onClick={() => setMenuOpen(false)}
-            className="px-4 py-2 rounded-lg font-semibold border border-white text-white hover:bg-white hover:text-custom-accent transition text-center"
-          >
-            Donate
           </Link>
           <Link
             href="/book"

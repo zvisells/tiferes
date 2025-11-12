@@ -6,7 +6,7 @@ import AudioPlayer from '@/components/AudioPlayer';
 import TimestampsList from '@/components/TimestampsList';
 import TimestampPicker from '@/components/TimestampPicker';
 import { supabase } from '@/lib/supabaseClient';
-import { Tag, Edit2, Check, X } from 'lucide-react';
+import { Tag, Edit2, Check, X, Heart } from 'lucide-react';
 
 export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shiur }) {
   const [shiur, setShiur] = useState(initialShiur);
@@ -155,39 +155,55 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
 
   return (
     <div className="flex flex-col gap-8 p-4 md:p-6 max-w-4xl mx-auto py-8">
-      {/* Edit Mode Toggle */}
-      {isAdmin && (
+      {/* Top Actions */}
+      <div className="flex flex-row gap-2 items-center justify-between flex-wrap">
         <div className="flex flex-row gap-2 items-center">
-          {!isEditing && (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="btn-secondary flex flex-row items-center gap-2"
-            >
-              <Edit2 size={18} />
-              Edit
-            </button>
-          )}
-          {isEditing && (
+          {/* Edit Mode Toggle */}
+          {isAdmin && (
             <>
-              <button
-                onClick={handleSave}
-                disabled={isSaving}
-                className="btn-primary flex flex-row items-center gap-2"
-              >
-                <Check size={18} />
-                {isSaving ? 'Saving...' : 'Save'}
-              </button>
-              <button
-                onClick={handleCancel}
-                disabled={isSaving}
-                className="px-4 py-2 rounded-lg font-semibold border border-gray-300 text-gray-700 hover:bg-gray-100"
-              >
-                <X size={18} />
-              </button>
+              {!isEditing && (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="btn-secondary flex flex-row items-center gap-2"
+                >
+                  <Edit2 size={18} />
+                  Edit
+                </button>
+              )}
+              {isEditing && (
+                <>
+                  <button
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className="btn-primary flex flex-row items-center gap-2"
+                  >
+                    <Check size={18} />
+                    {isSaving ? 'Saving...' : 'Save'}
+                  </button>
+                  <button
+                    onClick={handleCancel}
+                    disabled={isSaving}
+                    className="px-4 py-2 rounded-lg font-semibold border border-gray-300 text-gray-700 hover:bg-gray-100"
+                  >
+                    <X size={18} />
+                  </button>
+                </>
+              )}
             </>
           )}
         </div>
-      )}
+
+        {/* Sponsor Button */}
+        <a
+          href="https://abcharity.org/Yehadis"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-primary flex flex-row items-center gap-2"
+        >
+          <Heart size={18} />
+          Sponsor This Shiur
+        </a>
+      </div>
 
       {/* Title */}
       {isEditing ? (

@@ -102,7 +102,7 @@ export default function ContactPage() {
             name="message"
             value={formData.message}
             onChange={handleChange}
-            placeholder="Your message here..."
+            placeholder="Shiur suggestion or feedback"
             className="search-input min-h-32"
             required
           />

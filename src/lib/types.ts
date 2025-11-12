@@ -30,3 +30,13 @@ export interface AdminUser {
   password_hash: string;
 }
 
+export interface Page {
+  id: string;
+  slug: string;
+  title: string;
+  content: string;
+  image_url?: string;
+  created_at: string;
+  updated_at: string;
+}
+
