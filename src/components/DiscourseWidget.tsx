@@ -107,7 +107,7 @@ export default function DiscourseWidget() {
     return (
       <div className="next-discourse flex flex-col gap-2 text-white text-xs p-3 bg-white bg-opacity-10 rounded-lg">
         <div className="flex flex-row items-center justify-between">
-          <div className="font-semibold">Next Discourse</div>
+          <div className="font-semibold">Upcoming Shiur</div>
           <div className="flex flex-row gap-1">
             <button
               onClick={handleSave}
@@ -157,7 +157,7 @@ export default function DiscourseWidget() {
   return (
     <div className="next-discourse flex flex-col gap-1 text-white text-xs md:text-sm group">
       <div className="flex flex-row items-center justify-between">
-        <div className="font-semibold">Next Discourse</div>
+        <div className="font-semibold">Upcoming Shiur</div>
         {isAdmin && (
           <button
             onClick={() => setIsEditing(true)}
