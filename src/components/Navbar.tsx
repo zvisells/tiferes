@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Menu, X, LogOut } from 'lucide-react';
+import { Menu, X, LogOut, Settings } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { logoutAdmin } from '@/lib/auth';
 import DiscourseWidget from './DiscourseWidget';
@@ -91,13 +91,22 @@ export default function Navbar() {
           Buy Now
         </Link>
         {isAdmin && (
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 rounded-lg font-semibold border border-white text-white hover:bg-white hover:text-custom-accent transition flex flex-row items-center gap-2"
-          >
-            <LogOut size={16} />
-            Logout
-          </button>
+          <>
+            <Link
+              href="/admin/pages"
+              className="px-4 py-2 rounded-lg font-semibold border border-white text-white hover:bg-white hover:text-custom-accent transition flex flex-row items-center gap-2"
+            >
+              <Settings size={16} />
+              Pages
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 rounded-lg font-semibold border border-white text-white hover:bg-white hover:text-custom-accent transition flex flex-row items-center gap-2"
+            >
+              <LogOut size={16} />
+              Logout
+            </button>
+          </>
         )}
       </div>
 
@@ -151,16 +160,26 @@ export default function Navbar() {
             Buy Now
           </Link>
           {isAdmin && (
-            <button
-              onClick={() => {
-                handleLogout();
-                setMenuOpen(false);
-              }}
-              className="px-4 py-2 rounded-lg font-semibold border border-white text-white hover:bg-white hover:text-custom-accent transition text-center w-full flex flex-row items-center justify-center gap-2"
-            >
-              <LogOut size={16} />
-              Logout
-            </button>
+            <>
+              <Link
+                href="/admin/pages"
+                onClick={() => setMenuOpen(false)}
+                className="px-4 py-2 rounded-lg font-semibold border border-white text-white hover:bg-white hover:text-custom-accent transition text-center w-full flex flex-row items-center justify-center gap-2"
+              >
+                <Settings size={16} />
+                Pages
+              </Link>
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setMenuOpen(false);
+                }}
+                className="px-4 py-2 rounded-lg font-semibold border border-white text-white hover:bg-white hover:text-custom-accent transition text-center w-full flex flex-row items-center justify-center gap-2"
+              >
+                <LogOut size={16} />
+                Logout
+              </button>
+            </>
           )}
 
           {/* Next Discourse Widget at bottom */}

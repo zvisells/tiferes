@@ -6,6 +6,7 @@ export async function GET() {
     const { data, error } = await supabase
       .from('pages')
       .select('id, slug, title')
+      .eq('show_in_nav', true)
       .order('created_at', { ascending: false });
 
     if (error) {

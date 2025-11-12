@@ -20,6 +20,7 @@ export default function AdminPagesPage() {
     image_url: '',
     button_text: '',
     button_link: '',
+    show_in_nav: true,
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
 
@@ -65,6 +66,7 @@ export default function AdminPagesPage() {
         content: formData.content,
         button_text: formData.button_text || null,
         button_link: formData.button_link || null,
+        show_in_nav: formData.show_in_nav,
       };
 
       // Upload image if provided
@@ -101,7 +103,7 @@ export default function AdminPagesPage() {
         if (error) throw error;
       }
 
-      setFormData({ title: '', slug: '', content: '', image_url: '', button_text: '', button_link: '' });
+      setFormData({ title: '', slug: '', content: '', image_url: '', button_text: '', button_link: '', show_in_nav: true });
       setImageFile(null);
       setIsCreating(false);
       setEditingId(null);
@@ -138,13 +140,14 @@ export default function AdminPagesPage() {
       image_url: page.image_url || '',
       button_text: page.button_text || '',
       button_link: page.button_link || '',
+      show_in_nav: page.show_in_nav,
     });
     setEditingId(page.id);
     setIsCreating(true);
   };
 
   const handleCancel = () => {
-    setFormData({ title: '', slug: '', content: '', image_url: '', button_text: '', button_link: '' });
+    setFormData({ title: '', slug: '', content: '', image_url: '', button_text: '', button_link: '', show_in_nav: true });
     setImageFile(null);
     setIsCreating(false);
     setEditingId(null);
@@ -245,6 +248,19 @@ export default function AdminPagesPage() {
                 placeholder="e.g., https://example.com"
                 className="search-input"
               />
+            </div>
+
+            <div className="border-t border-gray-300 pt-4 flex flex-row items-center gap-2">
+              <input
+                type="checkbox"
+                id="showInNav"
+                checked={formData.show_in_nav}
+                onChange={(e) => setFormData({ ...formData, show_in_nav: e.target.checked })}
+                className="w-4 h-4"
+              />
+              <label htmlFor="showInNav" className="text-sm font-semibold">
+                Show in navigation
+              </label>
             </div>
           </div>
 

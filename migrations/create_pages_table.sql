@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS pages (
   image_url VARCHAR(2048),
   button_text VARCHAR(255),
   button_link VARCHAR(2048),
+  show_in_nav BOOLEAN DEFAULT true,
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW()
 );

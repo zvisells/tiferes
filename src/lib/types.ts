@@ -38,6 +38,7 @@ export interface Page {
   image_url?: string;
   button_text?: string;
   button_link?: string;
+  show_in_nav: boolean;
   created_at: string;
   updated_at: string;
 }
