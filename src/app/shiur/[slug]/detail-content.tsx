@@ -20,6 +20,9 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [editedTimestamps, setEditedTimestamps] = useState(
+    initialShiur.timestamps || []
+  );
 
   // Check if user is admin
   useEffect(() => {
@@ -71,6 +74,11 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
         }
       }
 
+      // Update timestamps if changed
+      if (editedTimestamps.length > 0 || (shiur.timestamps && shiur.timestamps.length > 0)) {
+        updateData.timestamps = editedTimestamps;
+      }
+
       const { error } = await supabase
         .from('shiurim')
         .update(updateData)
@@ -86,6 +94,7 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
       setIsEditing(false);
       setImageFile(null);
       setAudioFile(null);
+      setEditedTimestamps(editedTimestamps);
       alert('Shiur updated successfully!');
     } catch (error) {
       console.error('Error saving:', error);
@@ -104,6 +113,7 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
     });
     setImageFile(null);
     setAudioFile(null);
+    setEditedTimestamps(shiur.timestamps || []);
     setIsEditing(false);
   };
 
@@ -270,6 +280,67 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
           <label htmlFor="allowDownload" className="text-sm">
             Allow users to download audio
           </label>
+        </div>
+      )}
+
+      {/* Timestamps Editing (Edit Mode) */}
+      {isEditing && (
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-row items-center justify-between">
+            <label className="font-semibold text-sm">Timestamps</label>
+            <button
+              onClick={() =>
+                setEditedTimestamps([
+                  ...editedTimestamps,
+                  { time: '0:00', topic: 'New Topic' },
+                ])
+              }
+              className="text-xs px-3 py-1 rounded bg-custom-accent text-white hover:opacity-90"
+            >
+              + Add
+            </button>
+          </div>
+          <div className="flex flex-col gap-2">
+            {editedTimestamps.map((ts, idx) => (
+              <div key={idx} className="flex flex-row gap-2 items-center">
+                <input
+                  type="text"
+                  value={ts.time}
+                  onChange={(e) => {
+                    const updated = [...editedTimestamps];
+                    updated[idx].time = e.target.value;
+                    setEditedTimestamps(updated);
+                  }}
+                  placeholder="HH:MM:SS"
+                  className="w-24 px-2 py-1 border border-gray-300 rounded text-sm"
+                />
+                <input
+                  type="text"
+                  value={ts.topic}
+                  onChange={(e) => {
+                    const updated = [...editedTimestamps];
+                    updated[idx].topic = e.target.value;
+                    setEditedTimestamps(updated);
+                  }}
+                  placeholder="Topic"
+                  className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+                />
+                <button
+                  onClick={() => {
+                    setEditedTimestamps(
+                      editedTimestamps.filter((_, i) => i !== idx)
+                    );
+                  }}
+                  className="px-2 py-1 text-red-600 hover:bg-red-50 rounded text-sm"
+                >
+                  Delete
+                </button>
+              </div>
+            ))}
+            {editedTimestamps.length === 0 && (
+              <p className="text-xs text-gray-500">No timestamps yet</p>
+            )}
+          </div>
         </div>
       )}
 

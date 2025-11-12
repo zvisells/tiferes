@@ -120,7 +120,7 @@ export default function AudioPlayer({
             type="range"
             min="0"
             max={duration || 0}
-            value={currentTime}
+            value={isNaN(currentTime) ? 0 : currentTime}
             onChange={handleProgressChange}
             className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer"
           />

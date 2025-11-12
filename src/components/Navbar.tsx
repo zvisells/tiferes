@@ -1,12 +1,34 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Menu, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Menu, X, LogOut } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
+import { logoutAdmin } from '@/lib/auth';
 import DiscourseWidget from './DiscourseWidget';
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const { data } = await supabase.auth.getSession();
+      setIsAdmin(!!data.session);
+    };
+    checkAdmin();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await logoutAdmin();
+      router.push('/');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
 
   return (
     <nav className="navbar flex flex-row items-center justify-between p-4 md:p-6 bg-custom-accent gap-6">
@@ -43,6 +65,15 @@ export default function Navbar() {
         >
           Buy Now
         </Link>
+        {isAdmin && (
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 rounded-lg font-semibold border border-white text-white hover:bg-white hover:text-custom-accent transition flex flex-row items-center gap-2"
+          >
+            <LogOut size={16} />
+            Logout
+          </button>
+        )}
       </div>
 
       {/* Mobile Menu Button */}
@@ -91,6 +122,18 @@ export default function Navbar() {
           >
             Buy Now
           </Link>
+          {isAdmin && (
+            <button
+              onClick={() => {
+                handleLogout();
+                setMenuOpen(false);
+              }}
+              className="px-4 py-2 rounded-lg font-semibold border border-white text-white hover:bg-white hover:text-custom-accent transition text-center w-full flex flex-row items-center justify-center gap-2"
+            >
+              <LogOut size={16} />
+              Logout
+            </button>
+          )}
 
           {/* Next Discourse Widget at bottom */}
           <div className="mt-6 pt-4 border-t border-white">

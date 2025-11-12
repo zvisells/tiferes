@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import AdminForm from '@/components/AdminForm';
-import AdminNavbar from '@/components/AdminNavbar';
 
 export default function NewShiurPage() {
   const router = useRouter();
@@ -101,13 +100,10 @@ export default function NewShiurPage() {
   };
 
   return (
-    <>
-      <AdminNavbar />
-      <div className="flex flex-col gap-8 p-4 md:p-6 max-w-2xl mx-auto py-8">
-        <h1 className="text-4xl font-bold text-custom-accent">Create New Shiur</h1>
-        <AdminForm onSubmit={handleFormSubmit} isLoading={uploading} />
-      </div>
-    </>
+    <div className="flex flex-col gap-8 p-4 md:p-6 max-w-2xl mx-auto py-8">
+      <h1 className="text-4xl font-bold text-custom-accent">Create New Shiur</h1>
+      <AdminForm onSubmit={handleFormSubmit} isLoading={uploading} />
+    </div>
   );
 }
 

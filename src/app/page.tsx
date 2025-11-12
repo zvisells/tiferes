@@ -109,17 +109,17 @@ export default function HomePage() {
         {loading ? 'Loading...' : `${filteredShiurim.length} shiurim found`}
       </div>
 
-      {/* Shiurim Grid */}
+      {/* Shiurim Cards */}
       {loading ? (
         <div className="text-center py-12 text-gray-500">
           Loading shiurim...
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="flex flex-row flex-wrap gap-6">
           {/* Admin New Shiur Card */}
           {isAdmin && (
-            <Link href="/admin/new">
-              <div className="audio-card cursor-pointer hover:bg-gray-50 transition-colors flex flex-col items-center justify-center">
+            <Link href="/admin/new" className="flex-1 min-w-72">
+              <div className="audio-card cursor-pointer hover:bg-gray-50 transition-colors flex flex-col h-full justify-center items-center">
                 {/* Image placeholder */}
                 <div className="w-full aspect-video bg-gradient-to-br from-gray-300 to-gray-400 rounded-lg flex items-center justify-center mb-4">
                   <Plus size={48} className="text-custom-accent" />
@@ -139,10 +139,12 @@ export default function HomePage() {
           {/* Shiurim Cards */}
           {filteredShiurim.length > 0 ? (
             filteredShiurim.map((shiur) => (
-              <AudioCard key={shiur.id} shiur={shiur} />
+              <div key={shiur.id} className="flex-1 min-w-72">
+                <AudioCard shiur={shiur} />
+              </div>
             ))
           ) : (
-            <div className="col-span-full text-center py-12 text-gray-500">
+            <div className="text-center py-12 text-gray-500 w-full">
               No shiurim found. Try adjusting your filters.
             </div>
           )}

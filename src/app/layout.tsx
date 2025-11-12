@@ -2,7 +2,6 @@ import React from 'react';
 import type { Metadata } from 'next';
 import '@/styles/globals.css';
 import Navbar from '@/components/Navbar';
-import AdminNavbarWrapper from '@/components/AdminNavbarWrapper';
 
 export const metadata: Metadata = {
   title: 'Tiferes L\'Moshe - Audio Discourse Archive',
@@ -18,7 +17,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AdminNavbarWrapper />
         <Navbar />
         <main className="min-h-screen bg-white">
           {children}
