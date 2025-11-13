@@ -12,6 +12,12 @@ const nextConfig = {
       },
     ],
   },
+  // Increase body size limit for file uploads (default is 50MB)
+  api: {
+    bodyParser: {
+      sizeLimit: '500mb',
+    },
+  },
 };
 
 module.exports = nextConfig;

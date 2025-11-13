@@ -14,6 +14,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check file size (500MB limit)
+    const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { error: `File size ${(file.size / 1024 / 1024).toFixed(2)}MB exceeds maximum allowed size of 500MB` },
+        { status: 413 }
+      );
+    }
+
     // Get Cloudflare credentials
     const cfAccessKeyId = process.env.CLOUDFLARE_ACCESS_KEY_ID;
     const cfSecretAccessKey = process.env.CLOUDFLARE_SECRET_ACCESS_KEY;
