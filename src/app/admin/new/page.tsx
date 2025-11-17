@@ -33,75 +33,100 @@ export default function NewShiurPage() {
       let imageUrl: string | null = null;
       let audioUrl: string | null = null;
 
-      // Upload files using FormData POST with AWS SDK (worked for 90MB file)
+      // Helper to upload file directly to R2 (bypasses Vercel limits)
+      const uploadDirectToR2 = async (file: File, fileType: string): Promise<string> => {
+        try {
+          console.log(`📤 Uploading ${fileType}:`, file.name, `(${(file.size / 1024 / 1024).toFixed(2)}MB)`);
+
+          // Step 1: Get R2 credentials from backend (tiny request, <1KB)
+          const credRes = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}&fileType=${fileType}`);
+          if (!credRes.ok) {
+            throw new Error(`Failed to get R2 credentials: ${credRes.statusText}`);
+          }
+          const creds = await credRes.json();
+          console.log(`🔑 Got R2 credentials for ${fileType}`);
+
+          // Step 2: Generate AWS S3 signature for direct upload
+          const date = new Date().toISOString().replace(/[:-]|\.\d{3}/g, '');
+          const dateStamp = date.substr(0, 8);
+          const region = 'auto';
+          const service = 's3';
+
+          // Create canonical request
+          const canonicalUri = `/${creds.bucket}/${creds.key}`;
+          const canonicalQuerystring = `X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=${creds.accessKeyId}%2F${dateStamp}%2F${region}%2F${service}%2Faws4_request&X-Amz-Date=${date}&X-Amz-Expires=3600&X-Amz-SignedHeaders=host`;
+          const canonicalHeaders = `host:${creds.accountId}.r2.cloudflarestorage.com\n`;
+          const payloadHash = 'UNSIGNED-PAYLOAD';
+          const canonicalRequest = `PUT\n${canonicalUri}\n${canonicalQuerystring}\n${canonicalHeaders}\nhost\n${payloadHash}`;
+
+          // Create signature
+          const signature = await createAwsSignature(canonicalRequest, creds.secretAccessKey, dateStamp, region, service);
+
+          // Step 3: Upload directly to R2 with proper AWS auth headers
+          console.log(`🚀 Uploading directly to R2...`);
+          const signedUrl = `${creds.uploadUrl}?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=${encodeURIComponent(creds.accessKeyId + '/' + dateStamp + '/' + region + '/' + service + '/aws4_request')}&X-Amz-Date=${date}&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=${signature}`;
+
+          const r2Response = await fetch(signedUrl, {
+            method: 'PUT',
+            body: file,
+            headers: {
+              'Content-Type': file.type || 'application/octet-stream',
+            },
+          });
+
+          if (!r2Response.ok) {
+            throw new Error(`R2 upload failed: ${r2Response.status} ${r2Response.statusText}`);
+          }
+
+          console.log(`✅ ${fileType} uploaded successfully:`, creds.publicUrl);
+          return creds.publicUrl;
+        } catch (error) {
+          console.error(`❌ Failed to upload ${fileType}:`, error);
+          throw error;
+        }
+      };
+
+      // AWS signature helper functions
+      const createAwsSignature = async (canonicalRequest: string, secretKey: string, dateStamp: string, region: string, service: string): Promise<string> => {
+        const stringToSign = `AWS4-HMAC-SHA256\n${new Date().toISOString().replace(/[:-]|\.\d{3}/g, '')}\n${dateStamp}/${region}/${service}/aws4_request\n${await sha256(canonicalRequest)}`;
+
+        const kDate = await hmac('AWS4' + secretKey, dateStamp);
+        const kRegion = await hmac(kDate, region);
+        const kService = await hmac(kRegion, service);
+        const kSigning = await hmac(kService, 'aws4_request');
+
+        return bytesToHex(await hmac(kSigning, stringToSign));
+      };
+
+      const sha256 = async (message: string): Promise<string> => {
+        const msgBuffer = new TextEncoder().encode(message);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        return bytesToHex(new Uint8Array(hashBuffer));
+      };
+
+      const hmac = async (key: string, message: string): Promise<ArrayBuffer> => {
+        const keyBuffer = new TextEncoder().encode(key);
+        const messageBuffer = new TextEncoder().encode(message);
+        const cryptoKey = await crypto.subtle.importKey('raw', keyBuffer, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+        return crypto.subtle.sign('HMAC', cryptoKey, messageBuffer);
+      };
+
+      const bytesToHex = (bytes: Uint8Array): string => {
+        return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+      };
+
+      // Upload image if provided
       if (imageFile) {
         try {
-          const imgFormData = new FormData();
-          imgFormData.append('file', imageFile);
-          imgFormData.append('fileType', 'image');
-          const imgRes = await fetch('/api/upload', {
-            method: 'POST',
-            body: imgFormData,
-          });
-          if (imgRes.ok) {
-            const imgData = await imgRes.json();
-            imageUrl = imgData.url;
-          }
+          imageUrl = await uploadDirectToR2(imageFile, 'image');
         } catch (error) {
           console.warn('Image upload failed, continuing without image:', error);
         }
       }
 
+      // Upload audio (required)
       if (audioFile) {
-        console.log(`📤 Uploading audio: ${audioFile.name} (${(audioFile.size / 1024 / 1024).toFixed(2)}MB)`);
-        const audioFormData = new FormData();
-        audioFormData.append('file', audioFile);
-        audioFormData.append('fileType', 'audio');
-
-        // Try multiple times with increasing delays (network issues)
-        let attempts = 0;
-        const maxAttempts = 3;
-
-        while (attempts < maxAttempts) {
-          try {
-            console.log(`🚀 Upload attempt ${attempts + 1}/${maxAttempts}...`);
-            const audioRes = await fetch('/api/upload', {
-              method: 'POST',
-              body: audioFormData,
-            });
-
-            if (audioRes.ok) {
-              const audioData = await audioRes.json();
-              audioUrl = audioData.url;
-              console.log('✅ Audio uploaded successfully');
-              break;
-            } else {
-              const errorText = await audioRes.text();
-              console.error(`❌ Upload attempt ${attempts + 1} failed:`, audioRes.status, errorText);
-
-              if (attempts === maxAttempts - 1) {
-                throw new Error(`Failed to upload audio file: ${audioRes.status}`);
-              }
-
-              // Wait before retrying (exponential backoff)
-              const delay = Math.pow(2, attempts) * 2000; // 2s, 4s, 8s
-              console.log(`⏳ Retrying in ${delay}ms...`);
-              await new Promise(resolve => setTimeout(resolve, delay));
-            }
-          } catch (error) {
-            console.error(`❌ Upload attempt ${attempts + 1} error:`, error);
-
-            if (attempts === maxAttempts - 1) {
-              throw error;
-            }
-
-            const delay = Math.pow(2, attempts) * 2000;
-            console.log(`⏳ Retrying in ${delay}ms...`);
-            await new Promise(resolve => setTimeout(resolve, delay));
-          }
-
-          attempts++;
-        }
+        audioUrl = await uploadDirectToR2(audioFile, 'audio');
       } else {
         throw new Error('Audio file is required');
       }

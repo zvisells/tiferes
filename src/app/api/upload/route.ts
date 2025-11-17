@@ -3,7 +3,7 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import crypto from 'crypto';
 
-// GET /api/upload?filename=X&fileType=Y - Get a presigned URL for direct R2 upload
+// GET /api/upload?filename=X&fileType=Y - Get R2 upload credentials for direct browser upload
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -37,47 +37,30 @@ export async function GET(request: NextRequest) {
     const randomId = crypto.randomBytes(6).toString('hex');
     const key = `${fileType}/${timestamp}-${randomId}-${filename}`;
 
-    console.log('🔵 Generating presigned URL for:', key);
+    console.log('🔵 Providing R2 credentials for:', key);
 
-    // Create S3 client for R2
-    const s3Client = new S3Client({
-      region: 'auto',
-      credentials: {
-        accessKeyId: cfAccessKeyId,
-        secretAccessKey: cfSecretAccessKey,
-      },
-      endpoint: `https://${cfAccountId}.r2.cloudflarestorage.com`,
-    });
-
-    // Generate presigned PUT URL (valid for 1 hour)
-    const command = new PutObjectCommand({
-      Bucket: cfBucketName,
-      Key: key,
-    });
-
-    // Get the presigned URL - this will generate the correct R2 URL
-    const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-
-    // For the public URL, use the configured public domain
+    // Return credentials for direct browser upload to R2
+    const uploadUrl = `https://${cfAccountId}.r2.cloudflarestorage.com/${cfBucketName}/${key}`;
     const publicUrl = `${cfR2Url}/${key}`;
 
-    console.log('Presigned URL generated:', presignedUrl);
-    console.log('Public URL will be:', publicUrl);
-
-    console.log('✅ Presigned URL generated');
+    console.log('✅ R2 credentials provided');
 
     return NextResponse.json(
       {
-        presignedUrl,
+        uploadUrl,
         publicUrl,
         key,
+        accessKeyId: cfAccessKeyId,
+        secretAccessKey: cfSecretAccessKey,
+        bucket: cfBucketName,
+        accountId: cfAccountId,
       },
       { status: 200 }
     );
   } catch (error) {
-    console.error('Presigned URL error:', error);
+    console.error('R2 credentials error:', error);
     return NextResponse.json(
-      { error: `Failed to generate presigned URL: ${error instanceof Error ? error.message : 'Unknown error'}` },
+      { error: `Failed to provide R2 credentials: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }
     );
   }
