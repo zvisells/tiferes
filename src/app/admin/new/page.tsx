@@ -107,7 +107,7 @@ export default function NewShiurPage() {
       const hmac = async (key: string | ArrayBuffer, message: string): Promise<ArrayBuffer> => {
         let keyBuffer: ArrayBuffer;
         if (typeof key === 'string') {
-          keyBuffer = new TextEncoder().encode(key);
+          keyBuffer = new TextEncoder().encode(key).buffer;
         } else {
           keyBuffer = key;
         }
