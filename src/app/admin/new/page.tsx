@@ -33,40 +33,24 @@ export default function NewShiurPage() {
       let imageUrl: string | null = null;
       let audioUrl: string | null = null;
 
-      // Helper to upload file directly to R2 (bypasses Vercel limits)
-      const uploadDirectToR2 = async (file: File, fileType: string): Promise<string> => {
+      // Helper to upload file via presigned URL (bypasses Vercel limits)
+      const uploadWithPresignedUrl = async (file: File, fileType: string): Promise<string> => {
         try {
           console.log(`📤 Uploading ${fileType}:`, file.name, `(${(file.size / 1024 / 1024).toFixed(2)}MB)`);
 
-          // Step 1: Get R2 credentials from backend (tiny request, <1KB)
-          const credRes = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}&fileType=${fileType}`);
-          if (!credRes.ok) {
-            throw new Error(`Failed to get R2 credentials: ${credRes.statusText}`);
+          // Step 1: Request presigned URL from backend (tiny request)
+          const response = await fetch(
+            `/api/upload?filename=${encodeURIComponent(file.name)}&fileType=${fileType}`
+          );
+          if (!response.ok) {
+            throw new Error(`Failed to get presigned URL: ${response.statusText}`);
           }
-          const creds = await credRes.json();
-          console.log(`🔑 Got R2 credentials for ${fileType}`);
+          const { presignedUrl, publicUrl } = await response.json();
+          console.log(`🔑 Got presigned URL for ${fileType}`);
 
-          // Step 2: Generate AWS S3 signature for direct upload
-          const date = new Date().toISOString().replace(/[:-]|\.\d{3}/g, '');
-          const dateStamp = date.substr(0, 8);
-          const region = 'auto';
-          const service = 's3';
-
-          // Create canonical request
-          const canonicalUri = `/${creds.bucket}/${creds.key}`;
-          const canonicalQuerystring = `X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=${creds.accessKeyId}%2F${dateStamp}%2F${region}%2F${service}%2Faws4_request&X-Amz-Date=${date}&X-Amz-Expires=3600&X-Amz-SignedHeaders=host`;
-          const canonicalHeaders = `host:${creds.accountId}.r2.cloudflarestorage.com\n`;
-          const payloadHash = 'UNSIGNED-PAYLOAD';
-          const canonicalRequest = `PUT\n${canonicalUri}\n${canonicalQuerystring}\n${canonicalHeaders}\nhost\n${payloadHash}`;
-
-          // Create signature
-          const signature = await createAwsSignature(canonicalRequest, creds.secretAccessKey, dateStamp, region, service);
-
-          // Step 3: Upload directly to R2 with proper AWS auth headers
+          // Step 2: Upload directly to R2 using presigned URL
           console.log(`🚀 Uploading directly to R2...`);
-          const signedUrl = `${creds.uploadUrl}?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=${encodeURIComponent(creds.accessKeyId + '/' + dateStamp + '/' + region + '/' + service + '/aws4_request')}&X-Amz-Date=${date}&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=${signature}`;
-
-          const r2Response = await fetch(signedUrl, {
+          const uploadResponse = await fetch(presignedUrl, {
             method: 'PUT',
             body: file,
             headers: {
@@ -74,56 +58,22 @@ export default function NewShiurPage() {
             },
           });
 
-          if (!r2Response.ok) {
-            throw new Error(`R2 upload failed: ${r2Response.status} ${r2Response.statusText}`);
+          if (!uploadResponse.ok) {
+            throw new Error(`R2 upload failed: ${uploadResponse.status} ${uploadResponse.statusText}`);
           }
 
-          console.log(`✅ ${fileType} uploaded successfully:`, creds.publicUrl);
-          return creds.publicUrl;
+          console.log(`✅ ${fileType} uploaded successfully:`, publicUrl);
+          return publicUrl;
         } catch (error) {
           console.error(`❌ Failed to upload ${fileType}:`, error);
           throw error;
         }
       };
 
-      // AWS signature helper functions
-      const createAwsSignature = async (canonicalRequest: string, secretKey: string, dateStamp: string, region: string, service: string): Promise<string> => {
-        const stringToSign = `AWS4-HMAC-SHA256\n${new Date().toISOString().replace(/[:-]|\.\d{3}/g, '')}\n${dateStamp}/${region}/${service}/aws4_request\n${await sha256(canonicalRequest)}`;
-
-        const kDate = await hmac('AWS4' + secretKey, dateStamp);
-        const kRegion = await hmac(kDate, region);
-        const kService = await hmac(kRegion, service);
-        const kSigning = await hmac(kService, 'aws4_request');
-
-        return bytesToHex(new Uint8Array(await hmac(kSigning, stringToSign)));
-      };
-
-      const sha256 = async (message: string): Promise<string> => {
-        const msgBuffer = new TextEncoder().encode(message);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-        return bytesToHex(new Uint8Array(hashBuffer));
-      };
-
-      const hmac = async (key: string | ArrayBuffer, message: string): Promise<ArrayBuffer> => {
-        let keyBuffer: ArrayBuffer;
-        if (typeof key === 'string') {
-          keyBuffer = new TextEncoder().encode(key).buffer;
-        } else {
-          keyBuffer = key;
-        }
-        const messageBuffer = new TextEncoder().encode(message);
-        const cryptoKey = await crypto.subtle.importKey('raw', keyBuffer, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-        return crypto.subtle.sign('HMAC', cryptoKey, messageBuffer);
-      };
-
-      const bytesToHex = (bytes: Uint8Array): string => {
-        return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
-      };
-
       // Upload image if provided
       if (imageFile) {
         try {
-          imageUrl = await uploadDirectToR2(imageFile, 'image');
+          imageUrl = await uploadWithPresignedUrl(imageFile, 'image');
         } catch (error) {
           console.warn('Image upload failed, continuing without image:', error);
         }
@@ -131,7 +81,7 @@ export default function NewShiurPage() {
 
       // Upload audio (required)
       if (audioFile) {
-        audioUrl = await uploadDirectToR2(audioFile, 'audio');
+        audioUrl = await uploadWithPresignedUrl(audioFile, 'audio');
       } else {
         throw new Error('Audio file is required');
       }

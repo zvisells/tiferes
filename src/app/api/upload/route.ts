@@ -3,7 +3,7 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import crypto from 'crypto';
 
-// GET /api/upload?filename=X&fileType=Y - Get R2 upload credentials for direct browser upload
+// GET /api/upload?filename=X&fileType=Y - Generate a presigned URL for direct R2 upload
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -37,30 +37,39 @@ export async function GET(request: NextRequest) {
     const randomId = crypto.randomBytes(6).toString('hex');
     const key = `${fileType}/${timestamp}-${randomId}-${filename}`;
 
-    console.log('🔵 Providing R2 credentials for:', key);
+    console.log('🔵 Generating presigned URL for:', key);
 
-    // Return credentials for direct browser upload to R2
-    const uploadUrl = `https://${cfAccountId}.r2.cloudflarestorage.com/${cfBucketName}/${key}`;
+    const s3Client = new S3Client({
+      region: 'auto',
+      credentials: {
+        accessKeyId: cfAccessKeyId,
+        secretAccessKey: cfSecretAccessKey,
+      },
+      endpoint: `https://${cfAccountId}.r2.cloudflarestorage.com`,
+    });
+
+    const command = new PutObjectCommand({
+      Bucket: cfBucketName,
+      Key: key,
+    });
+
+    const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
     const publicUrl = `${cfR2Url}/${key}`;
 
-    console.log('✅ R2 credentials provided');
+    console.log('✅ Presigned URL generated');
 
     return NextResponse.json(
       {
-        uploadUrl,
+        presignedUrl,
         publicUrl,
         key,
-        accessKeyId: cfAccessKeyId,
-        secretAccessKey: cfSecretAccessKey,
-        bucket: cfBucketName,
-        accountId: cfAccountId,
       },
       { status: 200 }
     );
   } catch (error) {
-    console.error('R2 credentials error:', error);
+    console.error('Presigned URL error:', error);
     return NextResponse.json(
-      { error: `Failed to provide R2 credentials: ${error instanceof Error ? error.message : 'Unknown error'}` },
+      { error: `Failed to generate presigned URL: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }
     );
   }
