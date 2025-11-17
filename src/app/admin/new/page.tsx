@@ -33,53 +33,75 @@ export default function NewShiurPage() {
       let imageUrl: string | null = null;
       let audioUrl: string | null = null;
 
-      // Helper to upload file using presigned URL (bypasses Vercel payload limits)
-      const uploadWithPresignedUrl = async (file: File, fileType: string): Promise<string> => {
-        try {
-          console.log(`📤 Uploading ${fileType}:`, file.name, `(${(file.size / 1024 / 1024).toFixed(2)}MB)`);
-
-          // Step 1: Get presigned URL from backend (tiny request, <1KB)
-          const presignRes = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}&fileType=${fileType}`);
-          if (!presignRes.ok) {
-            throw new Error(`Failed to get presigned URL: ${presignRes.statusText}`);
-          }
-          const { presignedUrl, publicUrl } = await presignRes.json();
-          console.log(`🔑 Got presigned URL for ${fileType}`);
-
-          // Step 2: Upload directly to R2 using presigned URL (bypasses Vercel entirely!)
-          console.log(`🚀 Uploading directly to R2...`);
-          const r2Response = await fetch(presignedUrl, {
-            method: 'PUT',
-            body: file,
-            headers: {
-              'Content-Type': file.type || 'application/octet-stream',
-            },
-          });
-
-          if (!r2Response.ok) {
-            throw new Error(`R2 upload failed: ${r2Response.statusText}`);
-          }
-
-          console.log(`✅ ${fileType} uploaded successfully:`, publicUrl);
-          return publicUrl;
-        } catch (error) {
-          console.error(`❌ Failed to upload ${fileType}:`, error);
-          throw error;
-        }
-      };
-
-      // Upload image if provided
+      // Upload files using FormData POST with AWS SDK (worked for 90MB file)
       if (imageFile) {
         try {
-          imageUrl = await uploadWithPresignedUrl(imageFile, 'image');
+          const imgFormData = new FormData();
+          imgFormData.append('file', imageFile);
+          imgFormData.append('fileType', 'image');
+          const imgRes = await fetch('/api/upload', {
+            method: 'POST',
+            body: imgFormData,
+          });
+          if (imgRes.ok) {
+            const imgData = await imgRes.json();
+            imageUrl = imgData.url;
+          }
         } catch (error) {
           console.warn('Image upload failed, continuing without image:', error);
         }
       }
 
-      // Upload audio (required)
       if (audioFile) {
-        audioUrl = await uploadWithPresignedUrl(audioFile, 'audio');
+        console.log(`📤 Uploading audio: ${audioFile.name} (${(audioFile.size / 1024 / 1024).toFixed(2)}MB)`);
+        const audioFormData = new FormData();
+        audioFormData.append('file', audioFile);
+        audioFormData.append('fileType', 'audio');
+
+        // Try multiple times with increasing delays (network issues)
+        let attempts = 0;
+        const maxAttempts = 3;
+
+        while (attempts < maxAttempts) {
+          try {
+            console.log(`🚀 Upload attempt ${attempts + 1}/${maxAttempts}...`);
+            const audioRes = await fetch('/api/upload', {
+              method: 'POST',
+              body: audioFormData,
+            });
+
+            if (audioRes.ok) {
+              const audioData = await audioRes.json();
+              audioUrl = audioData.url;
+              console.log('✅ Audio uploaded successfully');
+              break;
+            } else {
+              const errorText = await audioRes.text();
+              console.error(`❌ Upload attempt ${attempts + 1} failed:`, audioRes.status, errorText);
+
+              if (attempts === maxAttempts - 1) {
+                throw new Error(`Failed to upload audio file: ${audioRes.status}`);
+              }
+
+              // Wait before retrying (exponential backoff)
+              const delay = Math.pow(2, attempts) * 2000; // 2s, 4s, 8s
+              console.log(`⏳ Retrying in ${delay}ms...`);
+              await new Promise(resolve => setTimeout(resolve, delay));
+            }
+          } catch (error) {
+            console.error(`❌ Upload attempt ${attempts + 1} error:`, error);
+
+            if (attempts === maxAttempts - 1) {
+              throw error;
+            }
+
+            const delay = Math.pow(2, attempts) * 2000;
+            console.log(`⏳ Retrying in ${delay}ms...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+          }
+
+          attempts++;
+        }
       } else {
         throw new Error('Audio file is required');
       }

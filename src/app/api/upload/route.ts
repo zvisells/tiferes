@@ -55,8 +55,14 @@ export async function GET(request: NextRequest) {
       Key: key,
     });
 
+    // Get the presigned URL - this will generate the correct R2 URL
     const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+
+    // For the public URL, use the configured public domain
     const publicUrl = `${cfR2Url}/${key}`;
+
+    console.log('Presigned URL generated:', presignedUrl);
+    console.log('Public URL will be:', publicUrl);
 
     console.log('✅ Presigned URL generated');
 
