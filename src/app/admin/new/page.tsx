@@ -104,8 +104,13 @@ export default function NewShiurPage() {
         return bytesToHex(new Uint8Array(hashBuffer));
       };
 
-      const hmac = async (key: string, message: string): Promise<ArrayBuffer> => {
-        const keyBuffer = new TextEncoder().encode(key);
+      const hmac = async (key: string | ArrayBuffer, message: string): Promise<ArrayBuffer> => {
+        let keyBuffer: ArrayBuffer;
+        if (typeof key === 'string') {
+          keyBuffer = new TextEncoder().encode(key);
+        } else {
+          keyBuffer = key;
+        }
         const messageBuffer = new TextEncoder().encode(message);
         const cryptoKey = await crypto.subtle.importKey('raw', keyBuffer, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
         return crypto.subtle.sign('HMAC', cryptoKey, messageBuffer);
