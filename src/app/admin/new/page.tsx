@@ -158,27 +158,9 @@ export default function NewShiurPage() {
         </div>
       )}
 
-      {/* Upload Progress Bar */}
-      {uploading && uploadProgress > 0 && (
-        <div className="fixed top-4 left-4 right-4 bg-white rounded-lg shadow-lg p-3 z-50">
-          <div className="flex flex-row items-center gap-3">
-            <div className="flex-1">
-              <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                <div
-                  className="bg-custom-accent h-full transition-all duration-300"
-                  style={{ width: `${uploadProgress}%` }}
-                />
-              </div>
-            </div>
-            <span className="text-sm font-semibold text-custom-accent min-w-fit">
-              {uploadProgress}%
-            </span>
-          </div>
-        </div>
-      )}
 
       <h1 className="text-4xl font-bold text-custom-accent">Create New Shiur</h1>
-      <AdminForm onSubmit={handleFormSubmit} isLoading={uploading} />
+      <AdminForm onSubmit={handleFormSubmit} isLoading={uploading} uploadProgress={uploadProgress} />
     </div>
   );
 }

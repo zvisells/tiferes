@@ -229,24 +229,6 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
         </div>
       )}
 
-      {/* Upload Progress Bar */}
-      {isSaving && uploadProgress > 0 && (
-        <div className="fixed top-4 left-4 right-4 bg-white rounded-lg shadow-lg p-3 z-50">
-          <div className="flex flex-row items-center gap-3">
-            <div className="flex-1">
-              <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                <div
-                  className="bg-custom-accent h-full transition-all duration-300"
-                  style={{ width: `${uploadProgress}%` }}
-                />
-              </div>
-            </div>
-            <span className="text-sm font-semibold text-custom-accent min-w-fit">
-              {uploadProgress}%
-            </span>
-          </div>
-        </div>
-      )}
 
       {/* Top Actions */}
       <div className="flex flex-row gap-2 items-center justify-between flex-wrap">
@@ -277,10 +259,20 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
                   <button
                     onClick={handleSave}
                     disabled={isSaving}
-                    className="btn-primary flex flex-row items-center gap-2"
+                    className="btn-primary flex flex-row items-center gap-2 relative overflow-hidden"
                   >
-                    <Check size={18} />
-                    {isSaving ? 'Saving...' : 'Save'}
+                    {/* Progress bar background */}
+                    {isSaving && uploadProgress > 0 && (
+                      <div
+                        className="absolute inset-0 bg-custom-accent/30 transition-all duration-300"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    )}
+                    {/* Button content */}
+                    <span className="relative z-10 flex flex-row items-center gap-2">
+                      <Check size={18} />
+                      {isSaving ? `Saving... ${uploadProgress > 0 ? `${uploadProgress}%` : ''}` : 'Save'}
+                    </span>
                   </button>
                   <button
                     onClick={handleCancel}

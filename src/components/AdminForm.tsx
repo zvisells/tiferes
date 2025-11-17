@@ -7,6 +7,7 @@ import { TimestampTopic } from '@/lib/types';
 interface AdminFormProps {
   onSubmit: (formData: FormData) => Promise<void>;
   isLoading?: boolean;
+  uploadProgress?: number;
 }
 
 interface FormState {
@@ -17,7 +18,7 @@ interface FormState {
   timestamps: TimestampTopic[];
 }
 
-export default function AdminForm({ onSubmit, isLoading = false }: AdminFormProps) {
+export default function AdminForm({ onSubmit, isLoading = false, uploadProgress = 0 }: AdminFormProps) {
   const [formState, setFormState] = useState<FormState>({
     title: '',
     description: '',
@@ -247,13 +248,23 @@ export default function AdminForm({ onSubmit, isLoading = false }: AdminFormProp
         <label className="text-sm">Allow users to download audio</label>
       </div>
 
-      {/* Submit Button */}
+      {/* Submit Button with Progress */}
       <button
         type="submit"
         disabled={isLoading}
-        className="btn-primary w-full"
+        className="btn-primary w-full relative overflow-hidden"
       >
-        {isLoading ? 'Uploading...' : 'Upload Shiur'}
+        {/* Progress bar background */}
+        {isLoading && uploadProgress > 0 && (
+          <div
+            className="absolute inset-0 bg-custom-accent/30 transition-all duration-300"
+            style={{ width: `${uploadProgress}%` }}
+          />
+        )}
+        {/* Button text */}
+        <span className="relative z-10">
+          {isLoading ? `Uploading... ${uploadProgress > 0 ? `${uploadProgress}%` : ''}` : 'Upload Shiur'}
+        </span>
       </button>
     </form>
   );
