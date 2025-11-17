@@ -1,7 +1,83 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import crypto from 'crypto';
 
-// POST /api/upload - Handle file upload from client directly to R2
+// GET /api/upload?filename=X&fileType=Y - Get a presigned URL for direct R2 upload
+export async function GET(request: NextRequest) {
+  try {
+    const searchParams = request.nextUrl.searchParams;
+    const filename = searchParams.get('filename');
+    const fileType = searchParams.get('fileType');
+
+    if (!filename || !fileType) {
+      return NextResponse.json(
+        { error: 'Missing filename or fileType' },
+        { status: 400 }
+      );
+    }
+
+    // Get Cloudflare credentials
+    const cfAccessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
+    const cfSecretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
+    const cfBucketName = process.env.CLOUDFLARE_R2_BUCKET_NAME;
+    const cfAccountId = process.env.CLOUDFLARE_R2_ACCOUNT_ID;
+    const cfR2Url = process.env.NEXT_PUBLIC_CLOUDFLARE_R2_URL;
+
+    if (!cfAccessKeyId || !cfSecretAccessKey || !cfBucketName || !cfAccountId || !cfR2Url) {
+      console.error('Missing R2 credentials');
+      return NextResponse.json(
+        { error: 'R2 not configured' },
+        { status: 500 }
+      );
+    }
+
+    // Create a unique key
+    const timestamp = Date.now();
+    const randomId = crypto.randomBytes(6).toString('hex');
+    const key = `${fileType}/${timestamp}-${randomId}-${filename}`;
+
+    console.log('🔵 Generating presigned URL for:', key);
+
+    // Create S3 client for R2
+    const s3Client = new S3Client({
+      region: 'auto',
+      credentials: {
+        accessKeyId: cfAccessKeyId,
+        secretAccessKey: cfSecretAccessKey,
+      },
+      endpoint: `https://${cfAccountId}.r2.cloudflarestorage.com`,
+    });
+
+    // Generate presigned PUT URL (valid for 1 hour)
+    const command = new PutObjectCommand({
+      Bucket: cfBucketName,
+      Key: key,
+    });
+
+    const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+    const publicUrl = `${cfR2Url}/${key}`;
+
+    console.log('✅ Presigned URL generated');
+
+    return NextResponse.json(
+      {
+        presignedUrl,
+        publicUrl,
+        key,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error('Presigned URL error:', error);
+    return NextResponse.json(
+      { error: `Failed to generate presigned URL: ${error instanceof Error ? error.message : 'Unknown error'}` },
+      { status: 500 }
+    );
+  }
+}
+
+// POST /api/upload - Handle file upload from client directly to R2 (kept for backward compatibility)
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
