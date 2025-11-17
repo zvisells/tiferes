@@ -95,7 +95,7 @@ export default function NewShiurPage() {
         const kService = await hmac(kRegion, service);
         const kSigning = await hmac(kService, 'aws4_request');
 
-        return bytesToHex(await hmac(kSigning, stringToSign));
+        return bytesToHex(new Uint8Array(await hmac(kSigning, stringToSign)));
       };
 
       const sha256 = async (message: string): Promise<string> => {
