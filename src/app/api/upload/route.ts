@@ -17,11 +17,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get Cloudflare credentials
-    const cfAccessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
-    const cfSecretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
-    const cfBucketName = process.env.CLOUDFLARE_R2_BUCKET_NAME;
-    const cfAccountId = process.env.CLOUDFLARE_R2_ACCOUNT_ID;
+    // Get Cloudflare credentials (support both naming conventions)
+    const cfAccessKeyId = process.env.CLOUDFLARE_ACCESS_KEY_ID || process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
+    const cfSecretAccessKey = process.env.CLOUDFLARE_SECRET_ACCESS_KEY || process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
+    const cfBucketName = process.env.CLOUDFLARE_BUCKET_NAME || process.env.CLOUDFLARE_R2_BUCKET_NAME;
+    const cfAccountId = process.env.CLOUDFLARE_ACCOUNT_ID || process.env.CLOUDFLARE_R2_ACCOUNT_ID;
     const cfR2Url = process.env.NEXT_PUBLIC_CLOUDFLARE_R2_URL;
 
     if (!cfAccessKeyId || !cfSecretAccessKey || !cfBucketName || !cfAccountId || !cfR2Url) {
