@@ -8,6 +8,7 @@ import AdminForm from '@/components/AdminForm';
 export default function NewShiurPage() {
   const router = useRouter();
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
@@ -34,7 +35,7 @@ export default function NewShiurPage() {
       let imageUrl: string | null = null;
       let audioUrl: string | null = null;
 
-      // Helper to upload file via presigned URL (bypasses Vercel limits)
+      // Helper to upload file via presigned URL with progress tracking (bypasses Vercel limits)
       const uploadWithPresignedUrl = async (file: File, fileType: string): Promise<string> => {
         try {
           // Step 1: Request presigned URL from backend (tiny request)
@@ -46,21 +47,47 @@ export default function NewShiurPage() {
           }
           const { presignedUrl, publicUrl } = await response.json();
 
-          // Step 2: Upload directly to R2 using presigned URL
-          const uploadResponse = await fetch(presignedUrl, {
-            method: 'PUT',
-            body: file,
-            headers: {
-              'Content-Type': file.type || 'application/octet-stream',
-            },
+          // Step 2: Upload directly to R2 using XMLHttpRequest for progress tracking
+          return new Promise<string>((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+
+            // Track upload progress
+            xhr.upload.addEventListener('progress', (event) => {
+              if (event.lengthComputable) {
+                const percentComplete = Math.round((event.loaded / event.total) * 100);
+                setUploadProgress(percentComplete);
+              }
+            });
+
+            // Handle completion
+            xhr.addEventListener('load', () => {
+              if (xhr.status === 200) {
+                setUploadProgress(0);
+                resolve(publicUrl);
+              } else {
+                setUploadProgress(0);
+                reject(new Error(`R2 upload failed: ${xhr.status} ${xhr.statusText}`));
+              }
+            });
+
+            // Handle errors
+            xhr.addEventListener('error', () => {
+              setUploadProgress(0);
+              reject(new Error('Upload failed: network error'));
+            });
+
+            xhr.addEventListener('abort', () => {
+              setUploadProgress(0);
+              reject(new Error('Upload cancelled'));
+            });
+
+            // Set up and send request
+            xhr.open('PUT', presignedUrl);
+            xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+            xhr.send(file);
           });
-
-          if (!uploadResponse.ok) {
-            throw new Error(`R2 upload failed: ${uploadResponse.status} ${uploadResponse.statusText}`);
-          }
-
-          return publicUrl;
         } catch (error) {
+          setUploadProgress(0);
           throw error;
         }
       };
@@ -128,6 +155,25 @@ export default function NewShiurPage() {
           }`}
         >
           {toast.message}
+        </div>
+      )}
+
+      {/* Upload Progress Bar */}
+      {uploading && uploadProgress > 0 && (
+        <div className="fixed top-4 left-4 right-4 bg-white rounded-lg shadow-lg p-3 z-50">
+          <div className="flex flex-row items-center gap-3">
+            <div className="flex-1">
+              <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                <div
+                  className="bg-custom-accent h-full transition-all duration-300"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            </div>
+            <span className="text-sm font-semibold text-custom-accent min-w-fit">
+              {uploadProgress}%
+            </span>
+          </div>
         </div>
       )}
 

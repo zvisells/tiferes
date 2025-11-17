@@ -15,6 +15,7 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
   const [isAdmin, setIsAdmin] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [editedData, setEditedData] = useState({
     title: initialShiur.title,
@@ -63,33 +64,68 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
         allow_download: editedData.allow_download,
       };
 
+      // Helper to upload file with progress tracking
+      const uploadWithProgress = async (file: File, fileType: string): Promise<string> => {
+        return new Promise<string>((resolve, reject) => {
+          // Get presigned URL first
+          fetch(`/api/upload?filename=${encodeURIComponent(file.name)}&fileType=${fileType}`)
+            .then((response) => {
+              if (!response.ok) throw new Error('Failed to get presigned URL');
+              return response.json();
+            })
+            .then(({ presignedUrl, publicUrl }) => {
+              const xhr = new XMLHttpRequest();
+
+              xhr.upload.addEventListener('progress', (event) => {
+                if (event.lengthComputable) {
+                  const percentComplete = Math.round((event.loaded / event.total) * 100);
+                  setUploadProgress(percentComplete);
+                }
+              });
+
+              xhr.addEventListener('load', () => {
+                if (xhr.status === 200) {
+                  setUploadProgress(0);
+                  resolve(publicUrl);
+                } else {
+                  setUploadProgress(0);
+                  reject(new Error(`Upload failed: ${xhr.status}`));
+                }
+              });
+
+              xhr.addEventListener('error', () => {
+                setUploadProgress(0);
+                reject(new Error('Upload failed: network error'));
+              });
+
+              xhr.open('PUT', presignedUrl);
+              xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+              xhr.send(file);
+            })
+            .catch((error) => {
+              setUploadProgress(0);
+              reject(error);
+            });
+        });
+      };
+
       // Upload new audio file if provided
       if (audioFile) {
-        const audioFormData = new FormData();
-        audioFormData.append('file', audioFile);
-        audioFormData.append('fileType', 'audio');
-        const audioRes = await fetch('/api/upload', {
-          method: 'POST',
-          body: audioFormData,
-        });
-        if (audioRes.ok) {
-          const audioData = await audioRes.json();
-          updateData.audio_url = audioData.url;
+        try {
+          const audioUrl = await uploadWithProgress(audioFile, 'audio');
+          updateData.audio_url = audioUrl;
+        } catch (error) {
+          console.error('Audio upload failed:', error);
         }
       }
 
       // Upload new image file if provided
       if (imageFile) {
-        const imageFormData = new FormData();
-        imageFormData.append('file', imageFile);
-        imageFormData.append('fileType', 'image');
-        const imageRes = await fetch('/api/upload', {
-          method: 'POST',
-          body: imageFormData,
-        });
-        if (imageRes.ok) {
-          const imageData = await imageRes.json();
-          updateData.image_url = imageData.url;
+        try {
+          const imageUrl = await uploadWithProgress(imageFile, 'image');
+          updateData.image_url = imageUrl;
+        } catch (error) {
+          console.error('Image upload failed:', error);
         }
       }
 
@@ -190,6 +226,25 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
           }`}
         >
           {toast.message}
+        </div>
+      )}
+
+      {/* Upload Progress Bar */}
+      {isSaving && uploadProgress > 0 && (
+        <div className="fixed top-4 left-4 right-4 bg-white rounded-lg shadow-lg p-3 z-50">
+          <div className="flex flex-row items-center gap-3">
+            <div className="flex-1">
+              <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                <div
+                  className="bg-custom-accent h-full transition-all duration-300"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            </div>
+            <span className="text-sm font-semibold text-custom-accent min-w-fit">
+              {uploadProgress}%
+            </span>
+          </div>
         </div>
       )}
 
