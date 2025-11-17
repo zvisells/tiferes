@@ -8,6 +8,7 @@ import AdminForm from '@/components/AdminForm';
 export default function NewShiurPage() {
   const router = useRouter();
   const [uploading, setUploading] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -36,8 +37,6 @@ export default function NewShiurPage() {
       // Helper to upload file via presigned URL (bypasses Vercel limits)
       const uploadWithPresignedUrl = async (file: File, fileType: string): Promise<string> => {
         try {
-          console.log(`📤 Uploading ${fileType}:`, file.name, `(${(file.size / 1024 / 1024).toFixed(2)}MB)`);
-
           // Step 1: Request presigned URL from backend (tiny request)
           const response = await fetch(
             `/api/upload?filename=${encodeURIComponent(file.name)}&fileType=${fileType}`
@@ -46,10 +45,8 @@ export default function NewShiurPage() {
             throw new Error(`Failed to get presigned URL: ${response.statusText}`);
           }
           const { presignedUrl, publicUrl } = await response.json();
-          console.log(`🔑 Got presigned URL for ${fileType}`);
 
           // Step 2: Upload directly to R2 using presigned URL
-          console.log(`🚀 Uploading directly to R2...`);
           const uploadResponse = await fetch(presignedUrl, {
             method: 'PUT',
             body: file,
@@ -62,10 +59,8 @@ export default function NewShiurPage() {
             throw new Error(`R2 upload failed: ${uploadResponse.status} ${uploadResponse.statusText}`);
           }
 
-          console.log(`✅ ${fileType} uploaded successfully:`, publicUrl);
           return publicUrl;
         } catch (error) {
-          console.error(`❌ Failed to upload ${fileType}:`, error);
           throw error;
         }
       };
@@ -110,11 +105,14 @@ export default function NewShiurPage() {
 
       if (error) throw error;
 
-      alert('Shiur created successfully!');
-      router.push('/');
+      setToast({ message: 'Shiur created successfully!', type: 'success' });
+      setTimeout(() => {
+        router.push('/');
+      }, 1500);
     } catch (error) {
-      console.error('Form submission error:', error);
-      alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setToast({ message: `Failed: ${errorMessage}`, type: 'error' });
+      setTimeout(() => setToast(null), 3000);
     } finally {
       setUploading(false);
     }
@@ -122,6 +120,17 @@ export default function NewShiurPage() {
 
   return (
     <div className="flex flex-col gap-8 p-4 md:p-6 max-w-2xl mx-auto py-8">
+      {/* Toast Notification */}
+      {toast && (
+        <div
+          className={`fixed top-4 right-4 px-4 py-3 rounded-lg font-semibold text-white z-50 animate-pulse ${
+            toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+          }`}
+        >
+          {toast.message}
+        </div>
+      )}
+
       <h1 className="text-4xl font-bold text-custom-accent">Create New Shiur</h1>
       <AdminForm onSubmit={handleFormSubmit} isLoading={uploading} />
     </div>

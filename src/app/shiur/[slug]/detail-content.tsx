@@ -6,13 +6,16 @@ import AudioPlayer from '@/components/AudioPlayer';
 import TimestampsList from '@/components/TimestampsList';
 import TimestampPicker from '@/components/TimestampPicker';
 import { supabase } from '@/lib/supabaseClient';
-import { Tag, Edit2, Check, X, Heart } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Tag, Edit2, Check, X, Heart, Trash2 } from 'lucide-react';
 
 export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shiur }) {
+  const router = useRouter();
   const [shiur, setShiur] = useState(initialShiur);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [editedData, setEditedData] = useState({
     title: initialShiur.title,
     description: initialShiur.description || '',
@@ -111,12 +114,36 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
       setImageFile(null);
       setAudioFile(null);
       setEditedTimestamps(editedTimestamps);
-      alert('Shiur updated successfully!');
+      setToast({ message: 'Shiur updated successfully!', type: 'success' });
+      setTimeout(() => setToast(null), 3000);
     } catch (error) {
-      console.error('Error saving:', error);
-      alert('Failed to save changes');
+      setToast({ message: 'Failed to save changes', type: 'error' });
+      setTimeout(() => setToast(null), 3000);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm('Are you sure you want to delete this shiur? This cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('shiurim')
+        .delete()
+        .eq('id', shiur.id);
+
+      if (error) throw error;
+
+      setToast({ message: 'Shiur deleted successfully', type: 'success' });
+      setTimeout(() => {
+        router.push('/');
+      }, 1000);
+    } catch (error) {
+      setToast({ message: 'Failed to delete shiur', type: 'error' });
+      setTimeout(() => setToast(null), 3000);
     }
   };
 
@@ -155,6 +182,17 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
 
   return (
     <div className="flex flex-col gap-8 p-4 md:p-6 max-w-4xl mx-auto py-8">
+      {/* Toast Notification */}
+      {toast && (
+        <div
+          className={`fixed top-4 right-4 px-4 py-3 rounded-lg font-semibold text-white z-50 animate-pulse ${
+            toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+          }`}
+        >
+          {toast.message}
+        </div>
+      )}
+
       {/* Top Actions */}
       <div className="flex flex-row gap-2 items-center justify-between flex-wrap">
         <div className="flex flex-row gap-2 items-center">
@@ -162,13 +200,22 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
           {isAdmin && (
             <>
               {!isEditing && (
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="btn-secondary flex flex-row items-center gap-2"
-                >
-                  <Edit2 size={18} />
-                  Edit
-                </button>
+                <>
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="btn-secondary flex flex-row items-center gap-2"
+                  >
+                    <Edit2 size={18} />
+                    Edit
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className="px-4 py-2 rounded-lg font-semibold bg-red-500 text-white hover:bg-red-600 flex flex-row items-center gap-2"
+                  >
+                    <Trash2 size={18} />
+                    Delete
+                  </button>
+                </>
               )}
               {isEditing && (
                 <>
@@ -201,7 +248,7 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
           className="btn-primary flex flex-row items-center gap-2"
         >
           <Heart size={18} />
-          Sponsor This Shiur
+          Sponsor a Shiur
         </a>
       </div>
 
