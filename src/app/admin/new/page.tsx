@@ -33,63 +33,34 @@ export default function NewShiurPage() {
       let imageUrl: string | null = null;
       let audioUrl: string | null = null;
 
-      // Helper function to upload file directly to R2
-      const uploadToR2 = async (file: File, fileType: string): Promise<string> => {
-        try {
-          console.log(`📤 Uploading ${fileType}:`, file.name, `(${(file.size / 1024 / 1024).toFixed(2)}MB)`);
-
-          // Step 1: Get credentials from backend
-          const credRes = await fetch('/api/upload', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              filename: file.name,
-              fileType: fileType,
-              contentType: file.type || 'application/octet-stream',
-            }),
-          });
-
-          if (!credRes.ok) {
-            throw new Error(`Failed to get upload credentials: ${credRes.statusText}`);
-          }
-
-          const { publicUrl, uploadUrl, accessKeyId, key, bucket } = await credRes.json();
-          console.log(`🔑 Got credentials for key:`, key);
-
-          // Step 2: Upload directly to R2 (bypasses Vercel limits!)
-          console.log(`🚀 Uploading directly to R2...`);
-          const r2Response = await fetch(uploadUrl, {
-            method: 'PUT',
-            body: file,
-            headers: {
-              'Content-Type': file.type || 'application/octet-stream',
-            },
-          });
-
-          if (!r2Response.ok) {
-            throw new Error(`R2 upload failed: ${r2Response.statusText}`);
-          }
-
-          console.log(`✅ ${fileType} uploaded successfully to R2:`, publicUrl);
-          return publicUrl;
-        } catch (error) {
-          console.error(`❌ Failed to upload ${fileType}:`, error);
-          throw error;
-        }
-      };
-
-      // Upload image if provided
       if (imageFile) {
-        try {
-          imageUrl = await uploadToR2(imageFile, 'image');
-        } catch (error) {
-          console.warn('Image upload failed, continuing without image:', error);
+        const imgFormData = new FormData();
+        imgFormData.append('file', imageFile);
+        imgFormData.append('fileType', 'image');
+        const imgRes = await fetch('/api/upload', {
+          method: 'POST',
+          body: imgFormData,
+        });
+        if (imgRes.ok) {
+          const imgData = await imgRes.json();
+          imageUrl = imgData.url;
         }
       }
 
-      // Upload audio (required)
       if (audioFile) {
-        audioUrl = await uploadToR2(audioFile, 'audio');
+        const audioFormData = new FormData();
+        audioFormData.append('file', audioFile);
+        audioFormData.append('fileType', 'audio');
+        const audioRes = await fetch('/api/upload', {
+          method: 'POST',
+          body: audioFormData,
+        });
+        if (audioRes.ok) {
+          const audioData = await audioRes.json();
+          audioUrl = audioData.url;
+        } else {
+          throw new Error('Failed to upload audio file');
+        }
       } else {
         throw new Error('Audio file is required');
       }
