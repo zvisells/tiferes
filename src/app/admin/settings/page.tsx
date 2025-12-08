@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
+import AdminTabNav from '@/components/AdminTabNav';
 
 export default function AdminSettingsPage() {
   const router = useRouter();
@@ -121,24 +122,8 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="p-4 md:p-6 max-w-6xl min-w-[1000px] mx-auto py-8 flex flex-col gap-6">
-      {/* Page Title */}
-      <h1 className="text-3xl font-bold text-custom-accent">Admin Panel</h1>
-
       {/* Tab Navigation */}
-      <div className="flex flex-row gap-2 border-b border-gray-200">
-        <Link
-          href="/admin/pages"
-          className="px-6 py-3 font-semibold transition border-b-2 border-transparent text-gray-600 hover:text-custom-accent"
-        >
-          Pages
-        </Link>
-        <button
-          onClick={() => {}}
-          className="px-6 py-3 font-semibold transition border-b-2 text-custom-accent border-custom-accent"
-        >
-          Settings
-        </button>
-      </div>
+      <AdminTabNav />
 
       {/* PIN Settings Card */}
       <div className="bg-white border border-gray-200 rounded-lg p-6 md:p-8">

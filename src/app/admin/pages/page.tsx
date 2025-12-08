@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 import { Page } from '@/lib/types';
 import { Plus, Edit2, Trash2, Check, X } from 'lucide-react';
+import AdminTabNav from '@/components/AdminTabNav';
 
 export default function AdminPagesPage() {
   const router = useRouter();
@@ -170,25 +171,8 @@ export default function AdminPagesPage() {
 
   return (
     <div className="p-4 md:p-6 max-w-6xl min-w-[1000px] mx-auto py-8 flex flex-col gap-8">
-      <div className="flex flex-row items-center justify-between">
-        <h1 className="text-4xl font-bold text-custom-accent">Admin Panel</h1>
-      </div>
-
       {/* Tab Navigation */}
-      <div className="flex flex-row gap-2 border-b border-gray-200">
-        <button
-          onClick={() => {}}
-          className="px-6 py-3 font-semibold transition border-b-2 text-custom-accent border-custom-accent"
-        >
-          Pages
-        </button>
-        <Link
-          href="/admin/settings"
-          className="px-6 py-3 font-semibold transition border-b-2 border-transparent text-gray-600 hover:text-custom-accent"
-        >
-          Settings
-        </Link>
-      </div>
+      <AdminTabNav />
 
       {/* Pages Management */}
       <div className="flex flex-row items-center justify-between">
