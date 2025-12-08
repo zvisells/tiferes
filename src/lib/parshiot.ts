@@ -1,66 +1,66 @@
-// List of Torah portions (Parshiot) - from Chabad.org
+// List of Torah portions (Parshiot) - Ashkenazi spelling
 export const PARSHIOT = [
-  'Bereishit',
+  '**Bereishis**', // Book of Genesis
   'Noach',
-  'Lech Lecha',
-  'Vayera',
-  'Chayei Sarah',
-  'Toldot',
-  'Vayetze',
+  'Lech Lecho',
+  'Vayero',
+  'Chayei Soro',
+  'Toldos',
+  'Vayetzei',
   'Vayishlach',
-  'Vayeshev',
-  'Miketz',
-  'Vayigash',
+  'Vayeshiv',
+  'Mikeitz',
+  'Vayigosh',
   'Vaychi',
-  'Shemot',
-  'Va\'era',
+  '**Shemos**', // Book of Exodus
+  'Va\'ero',
   'Bo',
   'Beshalach',
   'Yitro',
-  'Mishpatim',
+  'Mishpotim',
   'Terumah',
   'Tetzaveh',
-  'Ki Tisa',
+  'Ki Siso',
   'Vayakhel',
   'Pekudei',
-  'Vayikra',
-  'Tzav',
+  '**Vayikro**', // Book of Leviticus
+  'Tzov',
   'Shemini',
-  'Tazria',
-  'Metzora',
-  'Acharei Mot',
+  'Tazrio',
+  'Matzoro',
+  'Acharei Mos',
   'Kedoshim',
   'Emor',
-  'Behar',
-  'Bechukotai',
-  'Bamidbar',
+  'Behor',
+  'Bechukosai',
+  '**Bamidbar**', // Book of Numbers
   'Nasso',
-  'Beha\'alotcha',
-  'Sh\'lach',
+  'Beha\'aloscho',
+  'Shlach',
   'Korach',
-  'Chukat',
+  'Chukas',
   'Balak',
-  'Pinchas',
-  'Matot',
+  'Pinchos',
+  'Matos',
   'Masei',
-  'Devarim',
-  'Va\'etchanan',
+  '**Devarim**', // Book of Deuteronomy
+  'Va\'etchonon',
   'Eikev',
-  'Re\'eh',
+  'Reeh',
   'Shofetim',
-  'Ki Tetze',
-  'Ki Tavo',
-  'Netzavim',
+  'Ki Seitzei',
+  'Ki Sovo',
+  'Netzovim',
   'Vayelech',
   'Ha\'azinu',
-  'V\'zot Habracha',
+  'V\'zos Habrosho',
 ];
 
 export const getParshiaList = (): string[] => {
-  return PARSHIOT;
+  return PARSHIOT.map(p => p.replace(/\*\*/g, '')); // Remove markdown for dropdown
 };
 
 export const isValidParsha = (parsha: string): boolean => {
-  return PARSHIOT.includes(parsha);
+  const cleanParshiot = PARSHIOT.map(p => p.replace(/\*\*/g, ''));
+  return cleanParshiot.includes(parsha);
 };
-

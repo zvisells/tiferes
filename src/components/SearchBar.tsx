@@ -65,7 +65,7 @@ export default function SearchBar({
         <option value="">All Parshiot</option>
         {parshiot.map((parsha) => (
           <option key={parsha} value={parsha}>
-            {parsha}
+            {parsha.includes('**') ? parsha.replace(/\*\*/g, '') + ' 📖' : parsha}
           </option>
         ))}
       </select>

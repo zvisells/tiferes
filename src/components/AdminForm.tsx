@@ -170,8 +170,8 @@ export default function AdminForm({ onSubmit, isLoading = false, uploadProgress 
         >
           <option value="">Select a Parsha...</option>
           {parshiot.map((parsha) => (
-            <option key={parsha} value={parsha}>
-              {parsha}
+            <option key={parsha} value={parsha.replace(/\*\*/g, '')}>
+              {parsha.includes('**') ? parsha.replace(/\*\*/g, '') + ' 📖' : parsha}
             </option>
           ))}
         </select>
