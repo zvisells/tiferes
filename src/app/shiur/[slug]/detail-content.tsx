@@ -8,6 +8,7 @@ import TimestampPicker from '@/components/TimestampPicker';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { Tag, Edit2, Check, X, Trash2 } from 'lucide-react';
+import { getParshiaList } from '@/lib/parshiot';
 
 export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shiur }) {
   const router = useRouter();
@@ -21,6 +22,7 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
     title: initialShiur.title,
     description: initialShiur.description || '',
     tags: initialShiur.tags.join(', '),
+    parsha: initialShiur.parsha || '',
     allow_download: initialShiur.allow_download,
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -61,6 +63,7 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
         title: editedData.title,
         description: editedData.description,
         tags,
+        parsha: editedData.parsha,
         allow_download: editedData.allow_download,
       };
 
@@ -188,6 +191,7 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
       title: shiur.title,
       description: shiur.description || '',
       tags: shiur.tags.join(', '),
+      parsha: shiur.parsha || '',
       allow_download: shiur.allow_download,
     });
     setImageFile(null);
@@ -330,6 +334,25 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
             onChange={(e) => setEditedData({ ...editedData, tags: e.target.value })}
             className="search-input"
           />
+        </div>
+      )}
+
+      {/* Parsha (Edit Mode) */}
+      {isEditing && (
+        <div className="flex flex-col gap-2">
+          <label className="font-semibold text-sm">Torah Portion (Parsha)</label>
+          <select
+            value={editedData.parsha}
+            onChange={(e) => setEditedData({ ...editedData, parsha: e.target.value })}
+            className="search-input"
+          >
+            <option value="">Select a Parsha...</option>
+            {getParshiaList().map((parsha) => (
+              <option key={parsha} value={parsha}>
+                {parsha.includes('**') ? parsha.replace(/\*\*/g, '') + ' 📖' : parsha}
+              </option>
+            ))}
+          </select>
         </div>
       )}
 
