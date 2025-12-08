@@ -36,12 +36,12 @@ export default function AdminSettingsPage() {
       const response = await fetch('/api/site-settings');
       if (response.ok) {
         const data = await response.json();
-        if (data.sponsor_link) {
-          setSponsorLink(data.sponsor_link);
-        }
+        setSponsorLink(data.sponsor_link || 'https://abcharity.org/Yehadis');
       }
     } catch (err) {
       console.error('Failed to fetch settings:', err);
+      // Set default value if fetch fails
+      setSponsorLink('https://abcharity.org/Yehadis');
     }
   };
 
