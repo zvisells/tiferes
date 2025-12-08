@@ -14,6 +14,7 @@ export interface Shiur {
   timestamps?: TimestampTopic[];
   allow_download: boolean;
   transcript?: string;
+  parsha?: string;
   created_at: string;
 }
 

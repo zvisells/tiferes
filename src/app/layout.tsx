@@ -2,6 +2,7 @@ import React from 'react';
 import { Castoro, Poppins } from 'next/font/google';
 import '@/styles/globals.css';
 import Navbar from '@/components/Navbar';
+import FloatingSponsorButton from '@/components/FloatingSponsorButton';
 import PinProtection from '@/components/PinProtection';
 
 const castoro = Castoro({
@@ -31,6 +32,7 @@ export default function RootLayout({
       <body className="font-poppins">
         <PinProtection>
           <Navbar />
+          <FloatingSponsorButton />
           <main className="min-h-screen bg-white">
             {children}
           </main>

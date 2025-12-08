@@ -99,12 +99,6 @@ export default function Navbar() {
         <div className="hidden lg:block">
           <DiscourseWidget />
         </div>
-        <Link
-          href="/book"
-          className="px-4 py-2 rounded-lg font-semibold bg-white text-custom-accent hover:opacity-90 transition"
-        >
-          Buy Now
-        </Link>
         {isAdmin && (
           <>
             <Link
@@ -166,16 +160,9 @@ export default function Navbar() {
             onClick={() => setMenuOpen(false)}
             className="text-white hover:opacity-80 transition"
           >
-            Contact
-          </Link>
-          <Link
-            href="/book"
-            onClick={() => setMenuOpen(false)}
-            className="px-4 py-2 rounded-lg font-semibold bg-white text-custom-accent hover:opacity-90 transition text-center"
-          >
-            Buy Now
-          </Link>
-          {isAdmin && (
+          Contact
+        </Link>
+        {isAdmin && (
             <>
               <Link
                 href="/admin/pages"

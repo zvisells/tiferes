@@ -1,0 +1,66 @@
+// List of Torah portions (Parshiot) - from Chabad.org
+export const PARSHIOT = [
+  'Bereishit',
+  'Noach',
+  'Lech Lecha',
+  'Vayera',
+  'Chayei Sarah',
+  'Toldot',
+  'Vayetze',
+  'Vayishlach',
+  'Vayeshev',
+  'Miketz',
+  'Vayigash',
+  'Vaychi',
+  'Shemot',
+  'Va\'era',
+  'Bo',
+  'Beshalach',
+  'Yitro',
+  'Mishpatim',
+  'Terumah',
+  'Tetzaveh',
+  'Ki Tisa',
+  'Vayakhel',
+  'Pekudei',
+  'Vayikra',
+  'Tzav',
+  'Shemini',
+  'Tazria',
+  'Metzora',
+  'Acharei Mot',
+  'Kedoshim',
+  'Emor',
+  'Behar',
+  'Bechukotai',
+  'Bamidbar',
+  'Nasso',
+  'Beha\'alotcha',
+  'Sh\'lach',
+  'Korach',
+  'Chukat',
+  'Balak',
+  'Pinchas',
+  'Matot',
+  'Masei',
+  'Devarim',
+  'Va\'etchanan',
+  'Eikev',
+  'Re\'eh',
+  'Shofetim',
+  'Ki Tetze',
+  'Ki Tavo',
+  'Netzavim',
+  'Vayelech',
+  'Ha\'azinu',
+  'V\'zot Habracha',
+];
+
+export const getParshiaList = (): string[] => {
+  return PARSHIOT;
+};
+
+export const isValidParsha = (parsha: string): boolean => {
+  return PARSHIOT.includes(parsha);
+};
+

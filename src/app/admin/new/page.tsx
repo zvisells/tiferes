@@ -26,7 +26,8 @@ export default function NewShiurPage() {
     try {
       const title = formData.get('title') as string;
       const description = formData.get('description') as string;
-      const tags = (formData.get('tags') as string).split(',').map((t) => t.trim());
+      const tags = (formData.get('tags') as string).split(',').map((t) => t.trim()).filter(t => t);
+      const parsha = formData.get('parsha') as string;
       const timestamps = JSON.parse(formData.get('timestamps') as string);
       const allowDownload = formData.get('allowDownload') === 'true';
       const imageFile = formData.get('image') as File | null;
@@ -121,6 +122,7 @@ export default function NewShiurPage() {
             title,
             description,
             tags,
+            parsha,
             image_url: imageUrl,
             audio_url: audioUrl,
             timestamps,

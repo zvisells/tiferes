@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { Search } from 'lucide-react';
+import { getParshiaList } from '@/lib/parshiot';
 
 interface SearchBarProps {
   onSearchChange: (query: string) => void;
@@ -10,7 +11,7 @@ interface SearchBarProps {
 
 export interface FilterState {
   searchQuery: string;
-  selectedTopic?: string;
+  selectedParsha?: string;
 }
 
 export default function SearchBar({
@@ -18,7 +19,8 @@ export default function SearchBar({
   onFilterChange,
 }: SearchBarProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTopic, setSelectedTopic] = useState('');
+  const [selectedParsha, setSelectedParsha] = useState('');
+  const parshiot = getParshiaList();
 
   const handleSearchChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,13 +34,13 @@ export default function SearchBar({
   const handleFilterChange = useCallback(() => {
     onFilterChange?.({
       searchQuery,
-      selectedTopic: selectedTopic || undefined,
+      selectedParsha: selectedParsha || undefined,
     });
-  }, [searchQuery, selectedTopic, onFilterChange]);
+  }, [searchQuery, selectedParsha, onFilterChange]);
 
   React.useEffect(() => {
     handleFilterChange();
-  }, [searchQuery, selectedTopic, handleFilterChange]);
+  }, [searchQuery, selectedParsha, handleFilterChange]);
 
   return (
     <div className="w-full flex flex-col md:flex-row gap-4 p-4 md:p-6 rounded-2xl bg-gray-50">
@@ -54,16 +56,19 @@ export default function SearchBar({
         />
       </div>
 
-      {/* Topic Filter */}
+      {/* Parsha Filter */}
       <select
-        value={selectedTopic}
-        onChange={(e) => setSelectedTopic(e.target.value)}
-        className="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-custom-accent bg-white text-gray-700 md:min-w-40"
+        value={selectedParsha}
+        onChange={(e) => setSelectedParsha(e.target.value)}
+        className="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-custom-accent bg-white text-gray-700 md:min-w-48"
       >
-        <option value="">All Topics</option>
-        {/* Topics will be dynamically populated */}
+        <option value="">All Parshiot</option>
+        {parshiot.map((parsha) => (
+          <option key={parsha} value={parsha}>
+            {parsha}
+          </option>
+        ))}
       </select>
     </div>
   );
 }
-

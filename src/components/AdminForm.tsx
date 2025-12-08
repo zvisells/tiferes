@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { X, Plus } from 'lucide-react';
 import { TimestampTopic } from '@/lib/types';
+import { getParshiaList } from '@/lib/parshiot';
 
 interface AdminFormProps {
   onSubmit: (formData: FormData) => Promise<void>;
@@ -14,6 +15,7 @@ interface FormState {
   title: string;
   description: string;
   tags: string;
+  parsha: string;
   allowDownload: boolean;
   timestamps: TimestampTopic[];
 }
@@ -23,9 +25,11 @@ export default function AdminForm({ onSubmit, isLoading = false, uploadProgress 
     title: '',
     description: '',
     tags: '',
+    parsha: '',
     allowDownload: false,
     timestamps: [],
   });
+  const parshiot = getParshiaList();
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [audioFile, setAudioFile] = useState<File | null>(null);
@@ -33,7 +37,7 @@ export default function AdminForm({ onSubmit, isLoading = false, uploadProgress 
   const [newTime, setNewTime] = useState('');
 
   const handleFormChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target as any;
     if (type === 'checkbox') {
@@ -85,6 +89,7 @@ export default function AdminForm({ onSubmit, isLoading = false, uploadProgress 
     formData.append('title', formState.title);
     formData.append('description', formState.description);
     formData.append('tags', formState.tags);
+    formData.append('parsha', formState.parsha);
     formData.append('allowDownload', String(formState.allowDownload));
     formData.append('timestamps', JSON.stringify(formState.timestamps));
     formData.append('audio', audioFile);
@@ -100,6 +105,7 @@ export default function AdminForm({ onSubmit, isLoading = false, uploadProgress 
         title: '',
         description: '',
         tags: '',
+        parsha: '',
         allowDownload: false,
         timestamps: [],
       });
@@ -151,6 +157,24 @@ export default function AdminForm({ onSubmit, isLoading = false, uploadProgress 
           placeholder="e.g., Torah, Ethics, Spirituality"
           className="search-input"
         />
+      </div>
+
+      {/* Parsha */}
+      <div className="flex flex-col gap-2">
+        <label className="font-semibold text-sm">Torah Portion (Parsha)</label>
+        <select
+          name="parsha"
+          value={formState.parsha}
+          onChange={handleFormChange}
+          className="search-input"
+        >
+          <option value="">Select a Parsha...</option>
+          {parshiot.map((parsha) => (
+            <option key={parsha} value={parsha}>
+              {parsha}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Image Upload */}

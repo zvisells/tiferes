@@ -7,7 +7,7 @@ import TimestampsList from '@/components/TimestampsList';
 import TimestampPicker from '@/components/TimestampPicker';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
-import { Tag, Edit2, Check, X, Heart, Trash2 } from 'lucide-react';
+import { Tag, Edit2, Check, X, Trash2 } from 'lucide-react';
 
 export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shiur }) {
   const router = useRouter();
@@ -286,17 +286,6 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
             </>
           )}
         </div>
-
-        {/* Sponsor Button */}
-        <a
-          href="https://abcharity.org/Yehadis"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-primary flex flex-row items-center gap-2"
-        >
-          <Heart size={18} />
-          Sponsor a Shiur
-        </a>
       </div>
 
       {/* Title */}

@@ -55,7 +55,7 @@ export default function HomePage() {
   useEffect(() => {
     let filtered = [...shiurim];
 
-    // Search query
+    // Parsha filter
     if (filters.searchQuery) {
       const query = filters.searchQuery.toLowerCase();
       filtered = filtered.filter(
@@ -71,11 +71,9 @@ export default function HomePage() {
       );
     }
 
-    // Topic filter
-    if (filters.selectedTopic) {
-      filtered = filtered.filter((shiur) =>
-        shiur.timestamps?.some((ts) => ts.topic === filters.selectedTopic)
-      );
+    // Parsha filter
+    if (filters.selectedParsha) {
+      filtered = filtered.filter((shiur) => shiur.parsha === filters.selectedParsha);
     }
 
     setFilteredShiurim(filtered);
