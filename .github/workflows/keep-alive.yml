@@ -1,0 +1,24 @@
+name: Keep Server Alive
+
+on:
+  schedule:
+    # Runs at 6 AM and 6 PM UTC every day (adjust times as needed)
+    - cron: '0 6,18 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping production server
+        run: |
+          curl -X GET https://tiferes.vercel.app/api/ping \
+            -H "User-Agent: KeepAlive-Cron" \
+            -v
+      
+      - name: Ping backup endpoint (homepage)
+        run: |
+          curl -X GET https://tiferes.vercel.app/ \
+            -H "User-Agent: KeepAlive-Cron" \
+            -v
+
