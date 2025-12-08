@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
 
     const { data: settings, error } = await supabase
       .from('site_settings')
-      .select('site_pin')
+      .select('site_pin, sponsor_link')
       .single();
 
     if (error) {
@@ -30,7 +30,10 @@ export async function GET(request: NextRequest) {
 
     // Don't expose actual PIN, just confirm it exists
     return NextResponse.json(
-      { has_pin: !!settings?.site_pin },
+      { 
+        has_pin: !!settings?.site_pin,
+        sponsor_link: settings?.sponsor_link || '',
+      },
       { status: 200 }
     );
   } catch (error) {
@@ -44,11 +47,21 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const { site_pin } = await request.json();
+    const body = await request.json();
+    const { site_pin, sponsor_link } = body;
 
-    if (!site_pin || site_pin.length !== 4 || !/^\d+$/.test(site_pin)) {
+    // Validate site_pin if provided
+    if (site_pin && (site_pin.length !== 4 || !/^\d+$/.test(site_pin))) {
       return NextResponse.json(
         { error: 'PIN must be exactly 4 digits' },
+        { status: 400 }
+      );
+    }
+
+    // Validate sponsor_link if provided
+    if (sponsor_link && typeof sponsor_link !== 'string') {
+      return NextResponse.json(
+        { error: 'Sponsor link must be a valid URL string' },
         { status: 400 }
       );
     }
@@ -65,23 +78,28 @@ export async function PUT(request: NextRequest) {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Build update object with only provided fields
+    const updateData: any = { id: 1 };
+    if (site_pin) updateData.site_pin = site_pin;
+    if (sponsor_link) updateData.sponsor_link = sponsor_link;
+
     // Update or create site settings
     const { data, error } = await supabase
       .from('site_settings')
-      .upsert({ id: 1, site_pin })
+      .upsert(updateData)
       .select()
       .single();
 
     if (error) {
-      console.error('Error updating PIN:', error);
+      console.error('Error updating settings:', error);
       return NextResponse.json(
-        { error: 'Failed to update PIN' },
+        { error: 'Failed to update settings' },
         { status: 500 }
       );
     }
 
     return NextResponse.json(
-      { message: 'PIN updated successfully' },
+      { message: 'Settings updated successfully' },
       { status: 200 }
     );
   } catch (error) {

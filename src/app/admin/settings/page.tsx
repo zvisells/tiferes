@@ -9,6 +9,7 @@ export default function AdminSettingsPage() {
   const router = useRouter();
   const [pin, setPin] = useState('');
   const [pinConfirm, setPinConfirm] = useState('');
+  const [sponsorLink, setSponsorLink] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -21,8 +22,24 @@ export default function AdminSettingsPage() {
       router.push('/admin');
     } else {
       setIsCheckingAuth(false);
+      // Fetch current settings
+      fetchSettings();
     }
   }, [router]);
+
+  const fetchSettings = async () => {
+    try {
+      const response = await fetch('/api/site-settings');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.sponsor_link) {
+          setSponsorLink(data.sponsor_link);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch settings:', err);
+    }
+  };
 
   if (isCheckingAuth) {
     return (
@@ -69,19 +86,49 @@ export default function AdminSettingsPage() {
     }
   };
 
+  const handleSaveSponsorLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    if (!sponsorLink.trim()) {
+      setError('Sponsor link cannot be empty');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/site-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sponsor_link: sponsorLink }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update sponsor link');
+      }
+
+      setSuccess('Sponsor link updated successfully!');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update sponsor link');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <div className="p-4 md:p-6 max-w-2xl mx-auto py-8">
+    <div className="p-4 md:p-6 max-w-2xl mx-auto py-8 flex flex-col gap-6">
       {/* Back Button */}
       <Link
-        href="/admin"
-        className="flex flex-row items-center gap-2 text-custom-accent hover:opacity-80 transition w-fit mb-6"
+        href="/admin/hub"
+        className="flex flex-row items-center gap-2 text-custom-accent hover:opacity-80 transition w-fit"
       >
         <ArrowLeft size={18} />
-        Back to Admin
+        Back to Admin Hub
       </Link>
 
       {/* Page Title */}
-      <h1 className="text-3xl font-bold text-custom-accent mb-8">Site Settings</h1>
+      <h1 className="text-3xl font-bold text-custom-accent">Site Settings</h1>
 
       {/* PIN Settings Card */}
       <div className="bg-white border border-gray-200 rounded-lg p-6 md:p-8">
@@ -131,20 +178,6 @@ export default function AdminSettingsPage() {
             />
           </div>
 
-          {/* Error Message */}
-          {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
-
-          {/* Success Message */}
-          {success && (
-            <div className="bg-green-50 text-green-600 p-3 rounded-lg text-sm">
-              {success}
-            </div>
-          )}
-
           {/* Submit Button */}
           <button
             type="submit"
@@ -155,6 +188,55 @@ export default function AdminSettingsPage() {
           </button>
         </form>
       </div>
+
+      {/* Sponsor Link Settings Card */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6 md:p-8">
+        <h2 className="text-xl font-semibold text-custom-accent mb-6">
+          Sponsor a Shiur Link
+        </h2>
+        <p className="text-gray-600 mb-6 text-sm">
+          Set the URL for the "Sponsor a Shiur" button shown to users.
+        </p>
+
+        <form onSubmit={handleSaveSponsorLink} className="space-y-4">
+          {/* Sponsor Link */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Sponsor Link URL
+            </label>
+            <input
+              type="url"
+              value={sponsorLink}
+              onChange={(e) => setSponsorLink(e.target.value)}
+              placeholder="https://example.com/sponsor"
+              className="search-input"
+            />
+          </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={isLoading || !sponsorLink.trim()}
+            className="btn-primary w-full mt-6"
+          >
+            {isLoading ? 'Updating...' : 'Update Sponsor Link'}
+          </button>
+        </form>
+      </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
+          {error}
+        </div>
+      )}
+
+      {/* Success Message */}
+      {success && (
+        <div className="bg-green-50 text-green-600 p-3 rounded-lg text-sm">
+          {success}
+        </div>
+      )}
     </div>
   );
 }
