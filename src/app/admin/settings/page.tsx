@@ -121,7 +121,7 @@ export default function AdminSettingsPage() {
   };
 
   return (
-    <div className="p-4 md:p-6 max-w-6xl min-w-[1000px] mx-auto py-8 flex flex-col gap-6">
+    <div className="p-4 md:p-6 w-[95%] md:max-w-6xl md:min-w-[1000px] mx-auto py-8 flex flex-col gap-6">
       {/* Tab Navigation */}
       <AdminTabNav />
 

@@ -53,7 +53,16 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="navbar flex flex-row items-center justify-between p-4 md:p-6 bg-custom-accent gap-6">
+    <nav className="navbar flex flex-row items-center justify-between p-4 md:p-6 bg-custom-accent gap-6 md:sticky md:top-0 md:z-50">
+      {/* Mobile Menu Button - LEFT */}
+      <button
+        onClick={() => setMenuOpen(!menuOpen)}
+        className="md:hidden text-white"
+        aria-label="Toggle menu"
+      >
+        {menuOpen ? <X size={24} /> : <Menu size={24} />}
+      </button>
+
       {/* LEFT: Logo + Navigation (desktop only) */}
       <div className="hidden md:flex flex-row items-center gap-6">
         <Link href="/" className="flex flex-row items-center gap-2">
@@ -94,6 +103,9 @@ export default function Navbar() {
         </Link>
       </div>
 
+      {/* Empty span for balance (mobile only) - RIGHT */}
+      <span className="md:hidden w-6" aria-hidden="true"></span>
+
       {/* RIGHT: Discourse Info + Buttons (desktop only) */}
       <div className="hidden md:flex flex-row gap-6 items-center">
         <div className="hidden lg:block">
@@ -118,15 +130,6 @@ export default function Navbar() {
           </>
         )}
       </div>
-
-      {/* Mobile Menu Button */}
-      <button
-        onClick={() => setMenuOpen(!menuOpen)}
-        className="md:hidden text-white"
-        aria-label="Toggle menu"
-      >
-        {menuOpen ? <X size={24} /> : <Menu size={24} />}
-      </button>
 
       {/* Mobile Menu */}
       {menuOpen && (
