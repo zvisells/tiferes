@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { supabase } from '@/lib/supabaseClient';
 import { ArrowLeft } from 'lucide-react';
 
 export default function AdminSettingsPage() {
@@ -17,14 +18,17 @@ export default function AdminSettingsPage() {
 
   useEffect(() => {
     // Check if user is authenticated
-    const isAuthenticated = sessionStorage.getItem('admin_authenticated');
-    if (!isAuthenticated) {
-      router.push('/admin');
-    } else {
-      setIsCheckingAuth(false);
-      // Fetch current settings
-      fetchSettings();
-    }
+    const checkAuth = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        router.push('/admin');
+      } else {
+        setIsCheckingAuth(false);
+        // Fetch current settings
+        fetchSettings();
+      }
+    };
+    checkAuth();
   }, [router]);
 
   const fetchSettings = async () => {
@@ -120,15 +124,31 @@ export default function AdminSettingsPage() {
     <div className="p-4 md:p-6 max-w-2xl mx-auto py-8 flex flex-col gap-6">
       {/* Back Button */}
       <Link
-        href="/admin/hub"
+        href="/"
         className="flex flex-row items-center gap-2 text-custom-accent hover:opacity-80 transition w-fit"
       >
         <ArrowLeft size={18} />
-        Back to Admin Hub
+        Back to Home
       </Link>
 
       {/* Page Title */}
-      <h1 className="text-3xl font-bold text-custom-accent">Site Settings</h1>
+      <h1 className="text-3xl font-bold text-custom-accent">Admin Panel</h1>
+
+      {/* Tab Navigation */}
+      <div className="flex flex-row gap-2 border-b border-gray-200">
+        <Link
+          href="/admin/pages"
+          className="px-6 py-3 font-semibold transition border-b-2 border-transparent text-gray-600 hover:text-custom-accent"
+        >
+          Pages
+        </Link>
+        <button
+          onClick={() => {}}
+          className="px-6 py-3 font-semibold transition border-b-2 text-custom-accent border-custom-accent"
+        >
+          Settings
+        </button>
+      </div>
 
       {/* PIN Settings Card */}
       <div className="bg-white border border-gray-200 rounded-lg p-6 md:p-8">

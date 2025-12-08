@@ -102,7 +102,7 @@ export default function Navbar() {
         {isAdmin && (
           <>
             <Link
-              href="/admin/hub"
+              href="/admin/pages"
               className="px-4 py-2 rounded-lg font-semibold border border-white text-white hover:bg-white hover:text-custom-accent transition flex flex-row items-center gap-2"
             >
               <Settings size={16} />
@@ -165,7 +165,7 @@ export default function Navbar() {
         {isAdmin && (
             <>
               <Link
-                href="/admin/hub"
+                href="/admin/pages"
                 onClick={() => setMenuOpen(false)}
                 className="px-4 py-2 rounded-lg font-semibold border border-white text-white hover:bg-white hover:text-custom-accent transition text-center w-full flex flex-row items-center justify-center gap-2"
               >
