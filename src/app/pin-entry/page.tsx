@@ -35,7 +35,14 @@ export default function PinEntryPage() {
       if (response.ok) {
         // Store PIN verification in sessionStorage
         sessionStorage.setItem('pin_verified', 'true');
-        router.push('/');
+        // Wait a moment then redirect
+        setTimeout(() => {
+          router.push('/');
+          // Force a hard refresh to ensure PinProtection component re-checks
+          setTimeout(() => {
+            window.location.reload();
+          }, 100);
+        }, 200);
       } else {
         setError('Invalid PIN. Please try again.');
         setPin('');

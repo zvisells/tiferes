@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import PinEntryPage from '@/app/pin-entry/page';
 
 interface PinProtectionProps {
@@ -10,7 +10,6 @@ interface PinProtectionProps {
 
 export default function PinProtection({ children }: PinProtectionProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const [isVerified, setIsVerified] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [showPinEntry, setShowPinEntry] = useState(false);
@@ -31,6 +30,7 @@ export default function PinProtection({ children }: PinProtectionProps) {
       const verified = sessionStorage.getItem('pin_verified');
       if (verified === 'true') {
         setIsVerified(true);
+        setShowPinEntry(false);
         setIsLoading(false);
         return;
       }
@@ -42,12 +42,15 @@ export default function PinProtection({ children }: PinProtectionProps) {
         
         if (data.pin_required) {
           setShowPinEntry(true);
+          setIsVerified(false);
         } else {
           setIsVerified(true);
+          setShowPinEntry(false);
         }
       } catch (error) {
         console.error('Error checking PIN requirement:', error);
         setIsVerified(true);
+        setShowPinEntry(false);
       } finally {
         setIsLoading(false);
       }
@@ -55,6 +58,20 @@ export default function PinProtection({ children }: PinProtectionProps) {
 
     checkAccess();
   }, [pathname]);
+
+  // Listen for storage changes (when PIN is verified in another tab/window or same window)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const verified = sessionStorage.getItem('pin_verified');
+      if (verified === 'true') {
+        setIsVerified(true);
+        setShowPinEntry(false);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   if (isLoading) {
     return (
@@ -73,4 +90,3 @@ export default function PinProtection({ children }: PinProtectionProps) {
 
   return <>{children}</>;
 }
-
