@@ -1,11 +1,11 @@
 'use client';
 
 import React from 'react';
-import { TimestampTopic } from '@/lib/types';
 import { Clock } from 'lucide-react';
+import { TimestampTopic } from '@/lib/types';
 
 interface TimestampsListProps {
-  timestamps: TimestampTopic[];
+  timestamps?: TimestampTopic[];
   onTimestampClick: (time: string) => void;
 }
 
@@ -23,6 +23,11 @@ export default function TimestampsList({
     return 0;
   };
 
+  // Sort timestamps chronologically
+  const sortedTimestamps = timestamps
+    ? [...timestamps].sort((a, b) => parseTimeToSeconds(a.time) - parseTimeToSeconds(b.time))
+    : [];
+
   const handleTimestampClick = (time: string) => {
     onTimestampClick(time);
   };
@@ -34,9 +39,9 @@ export default function TimestampsList({
         Topics
       </h3>
 
-      {timestamps && timestamps.length > 0 ? (
+      {sortedTimestamps && sortedTimestamps.length > 0 ? (
         <div className="flex flex-col gap-2">
-          {timestamps.map((ts, idx) => (
+          {sortedTimestamps.map((ts, idx) => (
             <button
               key={idx}
               onClick={() => handleTimestampClick(ts.time)}
@@ -50,9 +55,8 @@ export default function TimestampsList({
           ))}
         </div>
       ) : (
-        <p className="text-gray-500 text-sm">No timestamps available</p>
+        <p className="text-gray-500 text-sm">No topics available</p>
       )}
     </div>
   );
 }
-

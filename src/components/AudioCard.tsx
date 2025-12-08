@@ -1,36 +1,50 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Shiur } from '@/lib/types';
-import { Play, Clock, Tag } from 'lucide-react';
+import { Clock, Play, Tag } from 'lucide-react';
 
 interface AudioCardProps {
   shiur: Shiur;
 }
 
 export default function AudioCard({ shiur }: AudioCardProps) {
-  // Parse duration from audio if available (for now, placeholder)
-  const duration = '45:30';
+  const [duration, setDuration] = useState<string>('--:--');
+
+  useEffect(() => {
+    // Try to get duration from audio URL
+    const audio = new Audio(shiur.audio_url);
+    
+    const handleMetadata = () => {
+      const totalSeconds = Math.floor(audio.duration);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      
+      if (hours > 0) {
+        setDuration(`${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+      } else {
+        setDuration(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+      }
+    };
+
+    const handleError = () => {
+      setDuration('--:--');
+    };
+
+    audio.addEventListener('loadedmetadata', handleMetadata);
+    audio.addEventListener('error', handleError);
+
+    return () => {
+      audio.removeEventListener('loadedmetadata', handleMetadata);
+      audio.removeEventListener('error', handleError);
+    };
+  }, [shiur.audio_url]);
 
   return (
     <Link href={`/shiur/${shiur.slug}`}>
       <div className="audio-card cursor-pointer hover:bg-gray-50 transition-colors">
-        {/* Image - 16:9 aspect ratio with min height and placeholder */}
-        <div className="w-full aspect-video min-h-48 bg-gray-200 rounded-lg overflow-hidden">
-          {shiur.image_url ? (
-            <img
-              src={shiur.image_url}
-              alt={shiur.title}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-300 to-gray-400">
-              <span className="text-gray-500 text-sm">No Image</span>
-            </div>
-          )}
-        </div>
-
         {/* Title */}
         <h3 className="text-lg font-semibold text-custom-accent min-h-7">
           {shiur.title}
@@ -58,7 +72,7 @@ export default function AudioCard({ shiur }: AudioCardProps) {
           </div>
         </div>
 
-        {/* Tags - consistent height */}
+        {/* Tags - consistent height, only actual tags (not topics) */}
         <div className="min-h-8 flex items-start">
           {shiur.tags && shiur.tags.length > 0 && (
             <div className="flex flex-row gap-2 flex-wrap">
@@ -86,4 +100,3 @@ export default function AudioCard({ shiur }: AudioCardProps) {
     </Link>
   );
 }
-
