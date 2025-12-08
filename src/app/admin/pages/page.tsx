@@ -60,9 +60,15 @@ export default function AdminPagesPage() {
 
     setIsSaving(true);
     try {
+      // Normalize slug: lowercase, replace spaces with hyphens, remove special chars
+      const normalizedSlug = formData.slug
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
       const updateData: any = {
         title: formData.title,
-        slug: formData.slug,
+        slug: normalizedSlug,
         content: formData.content,
         button_text: formData.button_text || null,
         button_link: formData.button_link || null,
