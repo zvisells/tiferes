@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
-import { ArrowLeft } from 'lucide-react';
 
 export default function AdminSettingsPage() {
   const router = useRouter();
@@ -121,16 +120,7 @@ export default function AdminSettingsPage() {
   };
 
   return (
-    <div className="p-4 md:p-6 max-w-2xl mx-auto py-8 flex flex-col gap-6">
-      {/* Back Button */}
-      <Link
-        href="/"
-        className="flex flex-row items-center gap-2 text-custom-accent hover:opacity-80 transition w-fit"
-      >
-        <ArrowLeft size={18} />
-        Back to Home
-      </Link>
-
+    <div className="p-4 md:p-6 max-w-6xl min-w-[1000px] mx-auto py-8 flex flex-col gap-6">
       {/* Page Title */}
       <h1 className="text-3xl font-bold text-custom-accent">Admin Panel</h1>
 

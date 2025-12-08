@@ -169,7 +169,7 @@ export default function AdminPagesPage() {
   }
 
   return (
-    <div className="p-4 md:p-6 max-w-6xl mx-auto py-8 flex flex-col gap-8">
+    <div className="p-4 md:p-6 max-w-6xl min-w-[1000px] mx-auto py-8 flex flex-col gap-8">
       <div className="flex flex-row items-center justify-between">
         <h1 className="text-4xl font-bold text-custom-accent">Admin Panel</h1>
       </div>
