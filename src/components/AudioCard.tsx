@@ -7,9 +7,10 @@ import { Clock, Play, Tag } from 'lucide-react';
 
 interface AudioCardProps {
   shiur: Shiur;
+  isAdmin?: boolean;
 }
 
-export default function AudioCard({ shiur }: AudioCardProps) {
+export default function AudioCard({ shiur, isAdmin = false }: AudioCardProps) {
   const [duration, setDuration] = useState<string>('--:--');
 
   useEffect(() => {
@@ -65,11 +66,13 @@ export default function AudioCard({ shiur }: AudioCardProps) {
             <Clock size={14} />
             <span>{duration}</span>
           </div>
-          <div className="flex flex-row items-center gap-1">
-            <span>
-              {new Date(shiur.created_at).toLocaleDateString()}
-            </span>
-          </div>
+          {isAdmin && (
+            <div className="flex flex-row items-center gap-1">
+              <span>
+                {new Date(shiur.created_at).toLocaleDateString()}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Tags - consistent height, only actual tags (not topics) */}

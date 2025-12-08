@@ -112,11 +112,11 @@ export default function HomePage() {
         </div>
       ) : (
         <>
-          <div className="w-full flex flex-row flex-wrap gap-6 justify-center">
+          <div className="w-full flex flex-row flex-wrap gap-6 items-start justify-center">
             {/* Admin New Shiur Card */}
             {isAdmin && (
               <Link href="/admin/new" className="w-72">
-                <div className="audio-card cursor-pointer hover:bg-gray-50 transition-colors flex flex-col h-full justify-center items-center">
+                <div className="audio-card cursor-pointer hover:bg-gray-50 transition-colors flex flex-col justify-center items-center">
                   {/* Content */}
                   <h3 className="text-lg font-semibold text-custom-accent text-center">
                     <Plus size={48} className="text-custom-accent mx-auto mb-4" />
@@ -133,7 +133,7 @@ export default function HomePage() {
             {paginatedShiurim.length > 0 ? (
               paginatedShiurim.map((shiur) => (
                 <div key={shiur.id} className="w-72">
-                  <AudioCard shiur={shiur} />
+                  <AudioCard shiur={shiur} isAdmin={isAdmin} />
                 </div>
               ))
             ) : (
