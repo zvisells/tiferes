@@ -93,7 +93,7 @@ export default function HomePage() {
   return (
     <div className="flex flex-col gap-8 p-4 md:p-6 max-w-6xl mx-auto w-full">
       {/* Search & Filter Bar - Sticky on mobile */}
-      <div className="md:relative md:top-0 md:z-40 sticky top-[72px] z-40 bg-white py-4 -mx-4 px-4 md:mx-0 md:px-0 md:py-0">
+      <div className="md:relative md:top-0 md:z-40 sticky top-[72px] z-50 bg-white py-4 -mx-4 px-4 md:mx-0 md:px-0 md:py-0">
         <SearchBar 
           onSearchChange={(query) => {
             setFilters(prev => ({ ...prev, searchQuery: query }));
