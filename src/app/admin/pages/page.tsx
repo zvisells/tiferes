@@ -72,6 +72,7 @@ export default function AdminPagesPage() {
         title: formData.title,
         slug: normalizedSlug,
         content: formData.content,
+        image_url: formData.image_url || null,
         button_text: formData.button_text || null,
         button_link: formData.button_link || null,
         show_in_nav: formData.show_in_nav,
@@ -79,16 +80,34 @@ export default function AdminPagesPage() {
 
       // Upload image if provided
       if (imageFile) {
-        const imageFormData = new FormData();
-        imageFormData.append('file', imageFile);
-        imageFormData.append('fileType', 'image');
-        const imageRes = await fetch('/api/upload', {
-          method: 'POST',
-          body: imageFormData,
-        });
-        if (imageRes.ok) {
-          const imageData = await imageRes.json();
-          updateData.image_url = imageData.url;
+        try {
+          // Get presigned URL
+          const presignedRes = await fetch(
+            `/api/upload?filename=${encodeURIComponent(imageFile.name)}&fileType=image`
+          );
+          if (!presignedRes.ok) throw new Error('Failed to get presigned URL');
+          
+          const { presignedUrl, publicUrl } = await presignedRes.json();
+          
+          // Upload directly to R2
+          const uploadRes = await fetch(presignedUrl, {
+            method: 'PUT',
+            body: imageFile,
+            headers: {
+              'Content-Type': imageFile.type || 'application/octet-stream',
+            },
+          });
+          
+          if (uploadRes.ok) {
+            updateData.image_url = publicUrl;
+          } else {
+            throw new Error('Failed to upload image to R2');
+          }
+        } catch (error) {
+          console.error('Image upload error:', error);
+          alert('Failed to upload image');
+          setIsSaving(false);
+          return;
         }
       }
 
