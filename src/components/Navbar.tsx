@@ -53,7 +53,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="navbar flex flex-row items-center justify-between p-4 md:p-6 bg-custom-accent gap-6 md:sticky md:top-0 md:z-50">
+    <nav className="navbar flex flex-row items-center justify-between p-4 md:p-6 bg-custom-accent gap-6 sticky top-0 z-50 md:z-50">
       {/* Mobile Menu Button - LEFT */}
       <button
         onClick={() => setMenuOpen(!menuOpen)}
@@ -133,7 +133,7 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {menuOpen && (
-        <div className="absolute top-full left-0 right-0 bg-custom-accent border-b border-white flex flex-col gap-4 p-4 md:hidden">
+        <div className="absolute top-full left-0 right-0 bg-custom-accent border-b border-white flex flex-col gap-4 p-4 md:hidden z-40">
           <Link
             href="/"
             onClick={() => setMenuOpen(false)}
