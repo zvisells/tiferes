@@ -75,9 +75,6 @@ export default function Navbar() {
         <Link href="/" className="text-white hover:opacity-80 transition">
           Home
         </Link>
-        <Link href="/about" className="text-white hover:opacity-80 transition">
-          About
-        </Link>
         {pages.map((page) => (
           <Link
             key={page.id}
@@ -140,13 +137,6 @@ export default function Navbar() {
             className="text-white hover:opacity-80 transition"
           >
             Home
-          </Link>
-          <Link
-            href="/about"
-            onClick={() => setMenuOpen(false)}
-            className="text-white hover:opacity-80 transition"
-          >
-            About
           </Link>
           {pages.map((page) => (
             <Link
