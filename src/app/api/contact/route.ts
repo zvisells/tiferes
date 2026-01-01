@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
 
     const adminEmail = settings.contact_email;
     const resendApiKey = process.env.RESEND_API_KEY;
+    const senderEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'onboarding@resend.dev';
 
     if (!resendApiKey) {
       console.error('❌ RESEND_API_KEY not configured');
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`📧 Sending email to: ${adminEmail} from contact form`);
+    console.log(`📧 Sending email to: ${adminEmail} from: ${senderEmail}`);
 
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -60,7 +61,7 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'noreply@tifereslmoshe.org',
+        from: senderEmail,
         to: adminEmail,
         subject: `New Contact Form Submission from ${name}`,
         html: `
