@@ -1,12 +1,14 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { Search } from 'lucide-react';
+import { Search, Grid, List } from 'lucide-react';
 import { getParshiaList } from '@/lib/parshiot';
 
 interface SearchBarProps {
   onSearchChange: (query: string) => void;
   onFilterChange?: (filters: FilterState) => void;
+  viewMode?: 'card' | 'row';
+  onViewModeChange?: (mode: 'card' | 'row') => void;
 }
 
 export interface FilterState {
@@ -17,6 +19,8 @@ export interface FilterState {
 export default function SearchBar({
   onSearchChange,
   onFilterChange,
+  viewMode = 'card',
+  onViewModeChange,
 }: SearchBarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedParsha, setSelectedParsha] = useState('');
@@ -69,6 +73,34 @@ export default function SearchBar({
           </option>
         ))}
       </select>
+
+      {/* View Toggle */}
+      {onViewModeChange && (
+        <div className="flex flex-row gap-2 p-1 rounded-lg border border-gray-300 bg-white">
+          <button
+            onClick={() => onViewModeChange('card')}
+            className={`p-2 rounded transition-colors ${
+              viewMode === 'card'
+                ? 'bg-custom-accent text-white'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+            title="Card View"
+          >
+            <Grid size={20} />
+          </button>
+          <button
+            onClick={() => onViewModeChange('row')}
+            className={`p-2 rounded transition-colors ${
+              viewMode === 'row'
+                ? 'bg-custom-accent text-white'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+            title="Row View"
+          >
+            <List size={20} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

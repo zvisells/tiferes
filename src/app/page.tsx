@@ -3,12 +3,13 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import AudioCard from '@/components/AudioCard';
+import AudioRow from '@/components/AudioRow';
 import SearchBar, { FilterState } from '@/components/SearchBar';
 import { Shiur } from '@/lib/types';
 import { supabase } from '@/lib/supabaseClient';
 import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 
-const ITEMS_PER_PAGE = 30;
+const ITEMS_PER_PAGE = 33;
 
 export default function HomePage() {
   const [shiurim, setShiurim] = useState<Shiur[]>([]);
@@ -19,6 +20,13 @@ export default function HomePage() {
     searchQuery: '',
   });
   const [currentPage, setCurrentPage] = useState(1);
+  const [viewMode, setViewMode] = useState<'card' | 'row'>('card');
+
+  // Detect device type and set default view mode
+  useEffect(() => {
+    const isMobile = window.innerWidth < 768;
+    setViewMode(isMobile ? 'row' : 'card');
+  }, []);
 
   // Check if user is admin
   useEffect(() => {
@@ -98,7 +106,9 @@ export default function HomePage() {
           onSearchChange={(query) => {
             setFilters(prev => ({ ...prev, searchQuery: query }));
           }}
-          onFilterChange={setFilters} 
+          onFilterChange={setFilters}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
         />
       </div>
 
@@ -107,43 +117,71 @@ export default function HomePage() {
         {loading ? 'Loading...' : `${filteredShiurim.length} shiurim found`}
       </div>
 
-      {/* Shiurim Cards */}
+      {/* Shiurim Display */}
       {loading ? (
         <div className="text-center py-12 text-gray-500">
           Loading shiurim...
         </div>
       ) : (
         <>
-          <div className="w-full flex flex-row flex-wrap gap-6 items-start justify-center">
-            {/* Admin New Shiur Card */}
-            {isAdmin && (
-              <Link href="/admin/new" className="w-[95%] md:w-72">
-                <div className="audio-card cursor-pointer hover:bg-gray-50 transition-colors flex flex-col justify-center items-center">
-                  {/* Content */}
-                  <h3 className="text-lg font-semibold text-custom-accent text-center">
-                    <Plus size={48} className="text-custom-accent mx-auto mb-4" />
-                    New Shiur
-                  </h3>
-                  <div className="min-h-10"></div>
-                  <div className="min-h-5"></div>
-                  <div className="min-h-8"></div>
-                </div>
-              </Link>
-            )}
+          {viewMode === 'card' ? (
+            /* Card View */
+            <div className="w-full flex flex-row flex-wrap gap-6 items-start justify-center">
+              {/* Admin New Shiur Card */}
+              {isAdmin && (
+                <Link href="/admin/new" className="w-[95%] md:w-72">
+                  <div className="audio-card cursor-pointer hover:bg-gray-50 transition-colors flex flex-col justify-center items-center">
+                    <h3 className="text-lg font-semibold text-custom-accent text-center">
+                      <Plus size={48} className="text-custom-accent mx-auto mb-4" />
+                      New Shiur
+                    </h3>
+                    <div className="min-h-10"></div>
+                    <div className="min-h-5"></div>
+                    <div className="min-h-8"></div>
+                  </div>
+                </Link>
+              )}
 
-            {/* Shiurim Cards */}
-            {paginatedShiurim.length > 0 ? (
-              paginatedShiurim.map((shiur) => (
-                <div key={shiur.id} className="w-[95%] md:w-72">
-                  <AudioCard shiur={shiur} isAdmin={isAdmin} />
+              {/* Shiurim Cards */}
+              {paginatedShiurim.length > 0 ? (
+                paginatedShiurim.map((shiur) => (
+                  <div key={shiur.id} className="w-[95%] md:w-72">
+                    <AudioCard shiur={shiur} isAdmin={isAdmin} />
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-12 text-gray-500 w-full">
+                  No shiurim found. Try adjusting your filters.
                 </div>
-              ))
-            ) : (
-              <div className="text-center py-12 text-gray-500 w-full">
-                No shiurim found. Try adjusting your filters.
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          ) : (
+            /* Row View */
+            <div className="w-full flex flex-col gap-4">
+              {/* Admin New Shiur Row */}
+              {isAdmin && (
+                <Link href="/admin/new">
+                  <div className="flex flex-row items-center gap-4 p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">
+                    <Plus size={32} className="text-custom-accent flex-shrink-0" />
+                    <span className="text-lg font-semibold text-custom-accent">
+                      New Shiur
+                    </span>
+                  </div>
+                </Link>
+              )}
+
+              {/* Shiurim Rows */}
+              {paginatedShiurim.length > 0 ? (
+                paginatedShiurim.map((shiur) => (
+                  <AudioRow key={shiur.id} shiur={shiur} isAdmin={isAdmin} />
+                ))
+              ) : (
+                <div className="text-center py-12 text-gray-500 w-full">
+                  No shiurim found. Try adjusting your filters.
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Pagination Controls */}
           {totalPages > 1 && (
