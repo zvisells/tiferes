@@ -37,8 +37,8 @@ export default function AudioRow({ shiur, isAdmin = false }: AudioRowProps) {
             {shiur.description}
           </p>
 
-          {/* Meta Info */}
-          <div className="flex flex-row items-center gap-3 text-xs text-gray-500 flex-wrap">
+          {/* Timestamp + Duration */}
+          <div className="flex flex-row items-center gap-3 text-xs text-gray-500">
             <div className="flex flex-row items-center gap-1">
               <Clock size={14} />
               <span>{duration}</span>
@@ -48,21 +48,22 @@ export default function AudioRow({ shiur, isAdmin = false }: AudioRowProps) {
                 {new Date(shiur.created_at).toLocaleDateString()}
               </span>
             )}
-            {/* Tags - show up to 2 on mobile, 3 on desktop */}
-            {shiur.tags && shiur.tags.length > 0 && (
-              <div className="flex flex-row gap-2">
-                {shiur.tags.slice(0, window.innerWidth < 768 ? 2 : 3).map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center gap-1 bg-gray-100 px-2 py-1 rounded text-xs"
-                  >
-                    <Tag size={12} />
-                    <span className="truncate max-w-[80px]">{tag}</span>
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
+
+          {/* Tags - separate row with hidden overflow */}
+          {shiur.tags && shiur.tags.length > 0 && (
+            <div className="flex flex-row gap-2 overflow-hidden">
+              {shiur.tags.slice(0, 3).map((tag) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center gap-1 bg-gray-100 px-2 py-1 rounded text-xs flex-shrink-0"
+                >
+                  <Tag size={12} />
+                  <span className="truncate max-w-[80px]">{tag}</span>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Play Button */}
