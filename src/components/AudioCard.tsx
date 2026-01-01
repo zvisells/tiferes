@@ -20,9 +20,9 @@ export default function AudioCard({ shiur, isAdmin = false }: AudioCardProps) {
         {/* Image */}
         <div className="w-full h-48 bg-gray-200 rounded-lg overflow-hidden mb-3">
           <img
-            src={shiur.image_url || '@content/temp-shiur-image.jpg'}
+            src={shiur.image_url || '/temp-shiur-image.jpg'}
             alt={shiur.title}
-            className={`w-full h-full object-cover ${!shiur.image_url ? 'opacity-50' : ''}`}
+            className={`w-full h-full object-cover ${!shiur.image_url ? 'opacity-25' : ''}`}
           />
         </div>
 

@@ -330,7 +330,7 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
         {!isEditing && (
           <div className="w-full md:w-64 h-48 md:h-56 bg-gray-200 rounded-2xl overflow-hidden flex-shrink-0">
             <img
-              src={shiur.image_url || '@content/temp-shiur-image.jpg'}
+              src={shiur.image_url || '/temp-shiur-image.jpg'}
               alt={shiur.title}
               className={`w-full h-full object-cover ${!shiur.image_url ? 'opacity-50' : ''}`}
             />
