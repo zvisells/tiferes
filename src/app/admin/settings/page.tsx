@@ -196,7 +196,7 @@ export default function AdminSettingsPage() {
             <button
               type="submit"
               disabled={isLoading || pin.length !== 4 || pinConfirm.length !== 4}
-              className="btn-primary w-full mt-6"
+              className="btn-primary w-full mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Updating...' : 'Update PIN'}
             </button>
@@ -242,7 +242,7 @@ export default function AdminSettingsPage() {
             <button
               type="submit"
               disabled={isLoading || !sponsorLink.trim() || !contactEmail.trim()}
-              className="btn-primary w-full mt-6"
+              className="btn-primary w-full mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Updating...' : 'Save Settings'}
             </button>

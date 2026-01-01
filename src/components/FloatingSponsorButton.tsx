@@ -1,10 +1,26 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Heart } from 'lucide-react';
 
 export default function FloatingSponsorButton() {
-  const sponsorLink = 'https://abcharity.org/Yehadis';
+  const [sponsorLink, setSponsorLink] = useState('https://abcharity.org/Yehadis');
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch('/api/site-settings');
+        if (response.ok) {
+          const data = await response.json();
+          setSponsorLink(data.sponsor_link || 'https://abcharity.org/Yehadis');
+        }
+      } catch (error) {
+        console.error('Failed to fetch sponsor link:', error);
+      }
+    };
+
+    fetchSettings();
+  }, []);
 
   return (
     <a
