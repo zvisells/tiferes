@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { Shiur } from '@/lib/types';
 import { Clock, Play, Tag } from 'lucide-react';
@@ -11,37 +11,8 @@ interface AudioCardProps {
 }
 
 export default function AudioCard({ shiur, isAdmin = false }: AudioCardProps) {
-  const [duration, setDuration] = useState<string>('--:--');
-
-  useEffect(() => {
-    // Try to get duration from audio URL
-    const audio = new Audio(shiur.audio_url);
-    
-    const handleMetadata = () => {
-      const totalSeconds = Math.floor(audio.duration);
-      const hours = Math.floor(totalSeconds / 3600);
-      const minutes = Math.floor((totalSeconds % 3600) / 60);
-      const seconds = totalSeconds % 60;
-      
-      if (hours > 0) {
-        setDuration(`${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
-      } else {
-        setDuration(`${minutes}:${seconds.toString().padStart(2, '0')}`);
-      }
-    };
-
-    const handleError = () => {
-      setDuration('--:--');
-    };
-
-    audio.addEventListener('loadedmetadata', handleMetadata);
-    audio.addEventListener('error', handleError);
-
-    return () => {
-      audio.removeEventListener('loadedmetadata', handleMetadata);
-      audio.removeEventListener('error', handleError);
-    };
-  }, [shiur.audio_url]);
+  // Use saved duration from DB, or show placeholder
+  const duration = shiur.duration || '--:--';
 
   return (
     <Link href={`/shiur/${shiur.slug}`}>

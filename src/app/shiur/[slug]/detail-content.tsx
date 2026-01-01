@@ -117,6 +117,38 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
         try {
           const audioUrl = await uploadWithProgress(audioFile, 'audio');
           updateData.audio_url = audioUrl;
+
+          // Calculate new duration for the uploaded audio
+          const duration = await new Promise<string>((resolve) => {
+            const audio = new Audio();
+            const url = URL.createObjectURL(audioFile);
+            audio.src = url;
+
+            const handleMetadata = () => {
+              const totalSeconds = Math.floor(audio.duration);
+              const hours = Math.floor(totalSeconds / 3600);
+              const minutes = Math.floor((totalSeconds % 3600) / 60);
+              const seconds = totalSeconds % 60;
+
+              let durationStr = '';
+              if (hours > 0) {
+                durationStr = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+              } else {
+                durationStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+              }
+
+              resolve(durationStr);
+              URL.revokeObjectURL(url);
+            };
+
+            audio.addEventListener('loadedmetadata', handleMetadata);
+            audio.addEventListener('error', () => {
+              resolve(shiur.duration || '--:--');
+              URL.revokeObjectURL(url);
+            });
+          });
+
+          updateData.duration = duration;
         } catch (error) {
           console.error('Audio upload failed:', error);
         }

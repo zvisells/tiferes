@@ -109,6 +109,36 @@ export default function NewShiurPage() {
         throw new Error('Audio file is required');
       }
 
+      // Calculate audio duration
+      const duration = await new Promise<string>((resolve) => {
+        const audio = new Audio();
+        const url = URL.createObjectURL(audioFile!);
+        audio.src = url;
+
+        const handleMetadata = () => {
+          const totalSeconds = Math.floor(audio.duration);
+          const hours = Math.floor(totalSeconds / 3600);
+          const minutes = Math.floor((totalSeconds % 3600) / 60);
+          const seconds = totalSeconds % 60;
+
+          let durationStr = '';
+          if (hours > 0) {
+            durationStr = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+          } else {
+            durationStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+          }
+
+          resolve(durationStr);
+          URL.revokeObjectURL(url);
+        };
+
+        audio.addEventListener('loadedmetadata', handleMetadata);
+        audio.addEventListener('error', () => {
+          resolve('--:--');
+          URL.revokeObjectURL(url);
+        });
+      });
+
       const slug = title
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
@@ -127,6 +157,7 @@ export default function NewShiurPage() {
             audio_url: audioUrl,
             timestamps,
             allow_download: allowDownload,
+            duration,
             created_at: new Date().toISOString(),
           },
         ])

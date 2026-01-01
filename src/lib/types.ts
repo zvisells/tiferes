@@ -15,6 +15,7 @@ export interface Shiur {
   allow_download: boolean;
   transcript?: string;
   parsha?: string;
+  duration?: string; // HH:MM:SS or MM:SS format
   created_at: string;
 }
 
