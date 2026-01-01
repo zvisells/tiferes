@@ -144,7 +144,7 @@ export default function AudioPlayer({
         </button>
 
         {/* Progress Bar with Timestamp Markers */}
-        <div className="flex-1 flex flex-col gap-1">
+        <div className="flex-1 flex flex-col gap-1 mt-5">
           <div className="relative w-full h-2 flex items-center">
             <input
               type="range"
@@ -256,52 +256,60 @@ export default function AudioPlayer({
         </div>
 
         {/* Mobile Controls */}
-        <div className="flex flex-row items-center justify-between gap-2">
-          {/* Speed Control - Left */}
-          <button
-            onClick={cycleSpeed}
-            className="text-xs font-semibold text-custom-accent hover:opacity-70 transition cursor-pointer px-2 py-1 min-w-[50px] text-center"
-          >
-            {playbackSpeed}x
-          </button>
-
-          {/* Play Button - Center */}
-          <button
-            onClick={handlePlayPause}
-            className="bg-custom-accent text-white p-3 rounded-full flex items-center justify-center hover:opacity-90 transition flex-shrink-0"
-          >
-            {isPlaying ? <Pause size={24} fill="white" /> : <Play size={24} fill="white" />}
-          </button>
-
-          {/* Volume Control - Right */}
-          <div className="flex flex-row items-center gap-1">
-            <button onClick={handleMute} className="text-custom-accent p-1">
-              {isMuted || volume === 0 ? (
-                <VolumeX size={18} />
-              ) : (
-                <Volume2 size={18} />
-              )}
+        <div className="flex flex-row items-center gap-2">
+          {/* Speed Control - Left (flex-1 centered) */}
+          <div className="flex-1 flex justify-center">
+            <button
+              onClick={cycleSpeed}
+              className="text-xs font-semibold text-custom-accent hover:opacity-70 transition cursor-pointer px-2 py-1 min-w-[50px] text-center"
+            >
+              {playbackSpeed}x
             </button>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.1"
-              value={volume}
-              onChange={handleVolumeChange}
-              className="w-12 h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer"
-            />
           </div>
 
-          {/* Download Button - Right side */}
-          {allowDownload && (
-            <a
-              href={audioUrl}
-              download
-              className="btn-secondary p-2 rounded-full flex items-center justify-center"
+          {/* Play Button - Center (flex-1 centered) */}
+          <div className="flex-1 flex justify-center">
+            <button
+              onClick={handlePlayPause}
+              className="bg-custom-accent text-white p-3 rounded-full flex items-center justify-center hover:opacity-90 transition flex-shrink-0"
             >
-              <Download size={18} />
-            </a>
+              {isPlaying ? <Pause size={24} fill="white" /> : <Play size={24} fill="white" />}
+            </button>
+          </div>
+
+          {/* Volume Control - Right (flex-1 centered) */}
+          <div className="flex-1 flex justify-center items-center">
+            <div className="flex flex-row items-center gap-1">
+              <button onClick={handleMute} className="text-custom-accent p-1">
+                {isMuted || volume === 0 ? (
+                  <VolumeX size={18} />
+                ) : (
+                  <Volume2 size={18} />
+                )}
+              </button>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.1"
+                value={volume}
+                onChange={handleVolumeChange}
+                className="w-12 h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+          </div>
+
+          {/* Download Button - Right side (flex-1 centered) */}
+          {allowDownload && (
+            <div className="flex-1 flex justify-center">
+              <a
+                href={audioUrl}
+                download
+                className="btn-secondary p-2 rounded-full flex items-center justify-center"
+              >
+                <Download size={18} />
+              </a>
+            </div>
           )}
         </div>
       </div>
