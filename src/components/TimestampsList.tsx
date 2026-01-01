@@ -45,9 +45,9 @@ export default function TimestampsList({
             <button
               key={idx}
               onClick={() => handleTimestampClick(ts.time)}
-              className="text-left p-3 rounded-lg hover:bg-custom-accent hover:text-white transition-colors flex flex-row justify-between items-center gap-4"
+              className="group text-left p-3 rounded-lg hover:bg-custom-accent hover:text-white transition-colors flex flex-row justify-between items-center gap-4"
             >
-              <span className="text-xs bg-gray-200 px-2 py-1 rounded flex-shrink-0 group-hover:bg-white group-hover:text-custom-accent hover:bg-white hover:text-custom-accent transition-colors">
+              <span className="text-xs bg-gray-200 px-2 py-1 rounded flex-shrink-0 group-hover:bg-white group-hover:text-custom-accent transition-colors">
                 {ts.time}
               </span>
               <span className="font-medium flex-1">{ts.topic}</span>
