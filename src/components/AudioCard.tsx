@@ -22,7 +22,7 @@ export default function AudioCard({ shiur, isAdmin = false }: AudioCardProps) {
           <img
             src={shiur.image_url || '/temp-shiur-image.jpg'}
             alt={shiur.title}
-            className={`w-full h-full object-cover ${!shiur.image_url ? 'opacity-25' : ''}`}
+            className={`w-full h-full object-cover ${!shiur.image_url ? 'opacity-10' : ''}`}
           />
         </div>
 
