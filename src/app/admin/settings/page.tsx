@@ -85,6 +85,9 @@ export default function AdminSettingsPage() {
       setSuccess('PIN updated successfully!');
       setPin('');
       setPinConfirm('');
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update PIN');
     } finally {
@@ -123,6 +126,9 @@ export default function AdminSettingsPage() {
       }
 
       setSuccess('General settings updated successfully!');
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update settings');
     } finally {
