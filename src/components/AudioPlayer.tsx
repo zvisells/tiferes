@@ -135,17 +135,17 @@ export default function AudioPlayer({
       <audio ref={audioRef} src={audioUrl} preload="metadata" />
 
       {/* Player Controls */}
-      <div className="flex flex-row items-center gap-4">
+      <div className="flex flex-row items-start gap-4">
         <button
           onClick={handlePlayPause}
-          className="btn-primary p-3 rounded-full flex items-center justify-center"
+          className="btn-primary p-3 rounded-full flex items-center justify-center mt-1"
         >
           {isPlaying ? <Pause size={24} /> : <Play size={24} />}
         </button>
 
         {/* Progress Bar with Timestamp Markers */}
         <div className="flex-1 flex flex-col gap-1">
-          <div className="relative w-full">
+          <div className="relative w-full h-2 flex items-center">
             <input
               type="range"
               min="0"
@@ -179,7 +179,7 @@ export default function AudioPlayer({
         </div>
 
         {/* Volume Control */}
-        <div className="hidden md:flex flex-row items-center gap-2">
+        <div className="hidden md:flex flex-row items-center gap-2 mt-1">
           <button onClick={handleMute} className="text-custom-accent">
             {isMuted || volume === 0 ? (
               <VolumeX size={20} />
@@ -201,7 +201,7 @@ export default function AudioPlayer({
         {/* Playback Speed Control - Clickable Text */}
         <button
           onClick={cycleSpeed}
-          className="text-xs md:text-sm font-semibold text-custom-accent hover:opacity-70 transition cursor-pointer px-2 py-1"
+          className="text-xs md:text-sm font-semibold text-custom-accent hover:opacity-70 transition cursor-pointer px-2 py-1 min-w-[75px] text-center mt-1"
         >
           {playbackSpeed}x
         </button>
@@ -211,7 +211,7 @@ export default function AudioPlayer({
           <a
             href={audioUrl}
             download
-            className="btn-secondary p-2 rounded-full flex items-center justify-center"
+            className="btn-secondary p-2 rounded-full flex items-center justify-center mt-1"
           >
             <Download size={20} />
           </a>
