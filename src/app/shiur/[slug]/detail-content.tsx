@@ -480,6 +480,7 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
       <AudioPlayer
         audioUrl={shiur.audio_url}
         allowDownload={shiur.allow_download}
+        timestamps={shiur.timestamps}
       />
 
       {/* Timestamps */}

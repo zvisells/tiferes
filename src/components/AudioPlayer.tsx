@@ -8,17 +8,20 @@ import {
   VolumeX,
   Download,
 } from 'lucide-react';
+import { TimestampTopic } from '@/lib/types';
 
 interface AudioPlayerProps {
   audioUrl: string;
   allowDownload?: boolean;
   onTimeUpdate?: (time: number) => void;
+  timestamps?: TimestampTopic[];
 }
 
 export default function AudioPlayer({
   audioUrl,
   allowDownload = false,
   onTimeUpdate,
+  timestamps = [],
 }: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -26,6 +29,7 @@ export default function AudioPlayer({
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
 
   // Debug logging
   React.useEffect(() => {
@@ -94,11 +98,29 @@ export default function AudioPlayer({
     }
   };
 
+  const handleSpeedChange = (speed: number) => {
+    setPlaybackSpeed(speed);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = speed;
+    }
+  };
+
   const formatTime = (seconds: number) => {
     if (isNaN(seconds)) return '0:00';
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Convert timestamp string (HH:MM:SS or MM:SS) to seconds
+  const timeStringToSeconds = (timeStr: string): number => {
+    const parts = timeStr.split(':').map(Number);
+    if (parts.length === 3) {
+      return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    } else if (parts.length === 2) {
+      return parts[0] * 60 + parts[1];
+    }
+    return 0;
   };
 
   return (
@@ -114,16 +136,35 @@ export default function AudioPlayer({
           {isPlaying ? <Pause size={24} /> : <Play size={24} />}
         </button>
 
-        {/* Progress Bar */}
+        {/* Progress Bar with Timestamp Markers */}
         <div className="flex-1 flex flex-col gap-1">
-          <input
-            type="range"
-            min="0"
-            max={duration || 0}
-            value={isNaN(currentTime) ? 0 : currentTime}
-            onChange={handleProgressChange}
-            className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer"
-          />
+          <div className="relative w-full">
+            <input
+              type="range"
+              min="0"
+              max={duration || 0}
+              value={isNaN(currentTime) ? 0 : currentTime}
+              onChange={handleProgressChange}
+              className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer relative z-10"
+              style={{ background: 'transparent' }}
+            />
+            {/* Background track */}
+            <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-2 bg-gray-300 rounded-lg pointer-events-none" />
+            
+            {/* Timestamp markers */}
+            {duration > 0 && timestamps.map((ts, idx) => {
+              const timestampSeconds = timeStringToSeconds(ts.time);
+              const position = (timestampSeconds / duration) * 100;
+              return (
+                <div
+                  key={idx}
+                  className="absolute top-1/2 -translate-y-1/2 w-0.5 h-4 bg-custom-accent pointer-events-none z-0"
+                  style={{ left: `${position}%` }}
+                  title={ts.topic}
+                />
+              );
+            })}
+          </div>
           <div className="flex flex-row justify-between text-xs text-gray-600">
             <span>{formatTime(currentTime)}</span>
             <span>{formatTime(duration)}</span>
@@ -131,7 +172,7 @@ export default function AudioPlayer({
         </div>
 
         {/* Volume Control */}
-        <div className="flex flex-row items-center gap-2">
+        <div className="hidden md:flex flex-row items-center gap-2">
           <button onClick={handleMute} className="text-custom-accent">
             {isMuted || volume === 0 ? (
               <VolumeX size={20} />
@@ -148,6 +189,23 @@ export default function AudioPlayer({
             onChange={handleVolumeChange}
             className="w-16 h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer"
           />
+        </div>
+
+        {/* Playback Speed Control */}
+        <div className="relative">
+          <select
+            value={playbackSpeed}
+            onChange={(e) => handleSpeedChange(parseFloat(e.target.value))}
+            className="text-xs md:text-sm bg-white border border-gray-300 rounded px-2 py-1 cursor-pointer hover:bg-gray-50 transition"
+          >
+            <option value="0.5">0.5x</option>
+            <option value="0.75">0.75x</option>
+            <option value="1">1x</option>
+            <option value="1.25">1.25x</option>
+            <option value="1.5">1.5x</option>
+            <option value="1.75">1.75x</option>
+            <option value="2">2x</option>
+          </select>
         </div>
 
         {/* Download Button */}

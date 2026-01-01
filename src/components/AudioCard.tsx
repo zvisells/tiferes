@@ -75,17 +75,17 @@ export default function AudioCard({ shiur, isAdmin = false }: AudioCardProps) {
           )}
         </div>
 
-        {/* Tags - consistent height, only actual tags (not topics) */}
-        <div className="min-h-8 flex items-start">
+        {/* Tags - single line with ellipsis, no wrap */}
+        <div className="min-h-8 flex items-start overflow-hidden">
           {shiur.tags && shiur.tags.length > 0 && (
-            <div className="flex flex-row gap-2 flex-wrap">
+            <div className="flex flex-row gap-2 overflow-hidden whitespace-nowrap">
               {shiur.tags.slice(0, 3).map((tag) => (
                 <span
                   key={tag}
-                  className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded flex flex-row items-center gap-1"
+                  className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded flex flex-row items-center gap-1 flex-shrink-0"
                 >
                   <Tag size={12} />
-                  {tag}
+                  <span className="truncate max-w-[100px]">{tag}</span>
                 </span>
               ))}
             </div>
