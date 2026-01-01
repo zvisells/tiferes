@@ -295,12 +295,12 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
       {/* Title and Image Layout */}
       <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-start">
         {/* Image */}
-        {!isEditing && shiur.image_url && (
+        {!isEditing && (
           <div className="w-full md:w-64 h-48 md:h-56 bg-gray-200 rounded-2xl overflow-hidden flex-shrink-0">
             <img
-              src={shiur.image_url}
+              src={shiur.image_url || '@content/temp-shiur-image.jpg'}
               alt={shiur.title}
-              className="w-full h-full object-cover"
+              className={`w-full h-full object-cover ${!shiur.image_url ? 'opacity-50' : ''}`}
             />
           </div>
         )}

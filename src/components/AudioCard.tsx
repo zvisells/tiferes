@@ -47,15 +47,13 @@ export default function AudioCard({ shiur, isAdmin = false }: AudioCardProps) {
     <Link href={`/shiur/${shiur.slug}`}>
       <div className="audio-card cursor-pointer hover:bg-gray-50 transition-colors">
         {/* Image */}
-        {shiur.image_url && (
-          <div className="w-full h-48 bg-gray-200 rounded-lg overflow-hidden mb-3">
-            <img
-              src={shiur.image_url}
-              alt={shiur.title}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        )}
+        <div className="w-full h-48 bg-gray-200 rounded-lg overflow-hidden mb-3">
+          <img
+            src={shiur.image_url || '@content/temp-shiur-image.jpg'}
+            alt={shiur.title}
+            className={`w-full h-full object-cover ${!shiur.image_url ? 'opacity-50' : ''}`}
+          />
+        </div>
 
         {/* Title */}
         <h3 className="text-lg font-semibold text-custom-accent min-h-7">
