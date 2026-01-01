@@ -292,54 +292,60 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
         </div>
       </div>
 
-      {/* Title */}
-      {isEditing ? (
-        <input
-          type="text"
-          value={editedData.title}
-          onChange={(e) => setEditedData({ ...editedData, title: e.target.value })}
-          className="text-4xl font-bold text-custom-accent search-input"
-        />
-      ) : (
-        <h1 className="text-4xl font-bold text-custom-accent">{shiur.title}</h1>
-      )}
+      {/* Title and Image Layout */}
+      <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-start">
+        {/* Image */}
+        {!isEditing && shiur.image_url && (
+          <div className="w-full md:w-64 h-48 md:h-56 bg-gray-200 rounded-2xl overflow-hidden flex-shrink-0">
+            <img
+              src={shiur.image_url}
+              alt={shiur.title}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
 
-      {/* Meta Info */}
-      {!isEditing && (
-        <div className="flex flex-row gap-4 text-sm text-gray-600">
-          {isAdmin && <span>{new Date(shiur.created_at).toLocaleDateString()}</span>}
-        </div>
-      )}
+        {/* Title and Meta */}
+        <div className="flex flex-col gap-4 flex-1">
+          {/* Title */}
+          {isEditing ? (
+            <input
+              type="text"
+              value={editedData.title}
+              onChange={(e) => setEditedData({ ...editedData, title: e.target.value })}
+              className="text-4xl font-bold text-custom-accent search-input"
+            />
+          ) : (
+            <h1 className="text-4xl font-bold text-custom-accent">{shiur.title}</h1>
+          )}
 
-      {/* Parsha (Edit Mode) */}
-      {isEditing && (
-        <div className="flex flex-col gap-2">
-          <label className="font-semibold text-sm">Torah Portion (Parsha)</label>
-          <select
-            value={editedData.parsha}
-            onChange={(e) => setEditedData({ ...editedData, parsha: e.target.value })}
-            className="search-input"
-          >
-            <option value="">Select a Parsha...</option>
-            {getParshiaList().map((parsha) => (
-              <option key={parsha} value={parsha}>
-                {parsha.includes('**') ? parsha.replace(/\*\*/g, '') + ' 📖' : parsha}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
+          {/* Meta Info */}
+          {!isEditing && (
+            <div className="flex flex-row gap-4 text-sm text-gray-600">
+              {isAdmin && <span>{new Date(shiur.created_at).toLocaleDateString()}</span>}
+            </div>
+          )}
 
-      {/* Image */}
-      {!isEditing && shiur.image_url && (
-        <div className="w-full h-64 md:h-96 bg-gray-200 rounded-2xl overflow-hidden">
-          <img
-            src={shiur.image_url}
-            alt={shiur.title}
-            className="w-full h-full object-cover"
-          />
+          {/* Parsha (Edit Mode) */}
+          {isEditing && (
+            <div className="flex flex-col gap-2">
+              <label className="font-semibold text-sm">Torah Portion (Parsha)</label>
+              <select
+                value={editedData.parsha}
+                onChange={(e) => setEditedData({ ...editedData, parsha: e.target.value })}
+                className="search-input"
+              >
+                <option value="">Select a Parsha...</option>
+                {getParshiaList().map((parsha) => (
+                  <option key={parsha} value={parsha}>
+                    {parsha.includes('**') ? parsha.replace(/\*\*/g, '') + ' 📖' : parsha}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Image Upload (Edit Mode) */}
       {isEditing && (
