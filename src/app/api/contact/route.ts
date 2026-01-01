@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
+      console.error('❌ Database not configured');
       return NextResponse.json(
         { error: 'Database not configured' },
         { status: 500 }
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (settingsError || !settings?.contact_email) {
-      console.error('Error fetching contact email:', settingsError);
+      console.error('❌ Error fetching contact email:', settingsError);
       return NextResponse.json(
         { error: 'Contact email not configured' },
         { status: 500 }
@@ -41,6 +42,16 @@ export async function POST(request: NextRequest) {
 
     const adminEmail = settings.contact_email;
     const resendApiKey = process.env.RESEND_API_KEY;
+
+    if (!resendApiKey) {
+      console.error('❌ RESEND_API_KEY not configured');
+      return NextResponse.json(
+        { error: 'Email service not configured' },
+        { status: 500 }
+      );
+    }
+
+    console.log(`📧 Sending email to: ${adminEmail} from contact form`);
 
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -63,15 +74,18 @@ export async function POST(request: NextRequest) {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to send email');
+      const responseText = await response.text();
+      console.error('❌ Resend API error:', response.status, responseText);
+      throw new Error(`Resend API error: ${response.status} - ${responseText}`);
     }
 
+    console.log('✅ Email sent successfully');
     return NextResponse.json(
       { message: 'Email sent successfully' },
       { status: 200 }
     );
   } catch (error) {
-    console.error('Contact API error:', error);
+    console.error('❌ Contact API error:', error);
     return NextResponse.json(
       { error: 'Failed to send email' },
       { status: 500 }
