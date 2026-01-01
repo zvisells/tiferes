@@ -74,9 +74,8 @@ export default function AudioCard({ shiur, isAdmin = false }: AudioCardProps) {
 
         {/* Play Button - always at bottom */}
         <div className="flex flex-row gap-2 mt-auto pt-2">
-          <button className="bg-custom-accent text-white px-4 py-2 rounded-lg flex flex-row items-center justify-center gap-2 hover:opacity-90 transition">
-            <Play size={16} fill="white" />
-            Listen
+          <button className="bg-custom-accent text-white p-3 rounded-full flex items-center justify-center hover:opacity-90 transition">
+            <Play size={20} fill="white" />
           </button>
         </div>
       </div>

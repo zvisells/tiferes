@@ -67,9 +67,8 @@ export default function AudioRow({ shiur, isAdmin = false }: AudioRowProps) {
         </div>
 
         {/* Play Button */}
-        <button className="bg-custom-accent text-white px-4 py-2 rounded-lg flex flex-row items-center justify-center gap-2 hover:opacity-90 transition flex-shrink-0">
-          <Play size={16} fill="white" />
-          <span className="hidden md:inline">Listen</span>
+        <button className="bg-custom-accent text-white p-3 rounded-full flex items-center justify-center hover:opacity-90 transition flex-shrink-0">
+          <Play size={20} fill="white" />
         </button>
       </div>
     </Link>
