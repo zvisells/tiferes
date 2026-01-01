@@ -307,33 +307,7 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
       {/* Meta Info */}
       {!isEditing && (
         <div className="flex flex-row gap-4 text-sm text-gray-600">
-          <span>{new Date(shiur.created_at).toLocaleDateString()}</span>
-          {shiur.tags && shiur.tags.length > 0 && (
-            <div className="flex flex-row gap-2">
-              {shiur.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="inline-flex items-center gap-1 bg-gray-100 px-2 py-1 rounded text-xs"
-                >
-                  <Tag size={12} />
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Tags (Edit Mode) */}
-      {isEditing && (
-        <div className="flex flex-col gap-2">
-          <label className="font-semibold text-sm">Tags (comma-separated)</label>
-          <input
-            type="text"
-            value={editedData.tags}
-            onChange={(e) => setEditedData({ ...editedData, tags: e.target.value })}
-            className="search-input"
-          />
+          {isAdmin && <span>{new Date(shiur.created_at).toLocaleDateString()}</span>}
         </div>
       )}
 
@@ -489,6 +463,40 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
           timestamps={shiur.timestamps}
           onTimestampClick={handleTimestampClick}
         />
+      )}
+
+      {/* Tags - Display Mode */}
+      {!isEditing && shiur.tags && shiur.tags.length > 0 && (
+        <div className="flex flex-col gap-2 p-4 md:p-6 rounded-2xl bg-gray-50">
+          <h3 className="text-lg font-semibold text-custom-accent flex flex-row items-center gap-2">
+            <Tag size={20} />
+            Tags
+          </h3>
+          <div className="flex flex-row gap-2 flex-wrap">
+            {shiur.tags.map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex items-center gap-1 bg-gray-100 px-3 py-1.5 rounded text-sm"
+              >
+                <Tag size={14} />
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Tags - Edit Mode */}
+      {isEditing && (
+        <div className="flex flex-col gap-2">
+          <label className="font-semibold text-sm">Tags (comma-separated)</label>
+          <input
+            type="text"
+            value={editedData.tags}
+            onChange={(e) => setEditedData({ ...editedData, tags: e.target.value })}
+            className="search-input"
+          />
+        </div>
       )}
 
       {/* Description */}
