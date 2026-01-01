@@ -47,7 +47,7 @@ export default function SearchBar({
   }, [searchQuery, selectedParsha, handleFilterChange]);
 
   return (
-    <div className="w-full flex flex-col gap-4 px-4 pb-4 pt-0 md:p-6 rounded-2xl bg-gray-50">
+    <div className="w-full flex flex-col gap-4 p-4 md:p-6 rounded-2xl bg-gray-50">
       {/* Search Input - Full width on its own row */}
       <div className="flex-1 flex flex-row items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 bg-white">
         <Search size={20} className="text-gray-400 flex-shrink-0" />
