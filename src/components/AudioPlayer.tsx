@@ -36,6 +36,16 @@ export default function AudioPlayer({
     console.log('🎵 AudioPlayer received audioUrl:', audioUrl);
   }, [audioUrl]);
 
+  // Set volume to max on mount and ensure device controls work
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    
+    // Set to max volume to use device controls
+    audio.volume = 1;
+    setVolume(1);
+  }, []);
+
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -182,7 +192,7 @@ export default function AudioPlayer({
         <div className="flex flex-row items-center gap-2">
           <button onClick={handleMute} className="text-custom-accent">
             {isMuted || volume === 0 ? (
-              <VolumeX size={20} />
+              <VolumeX size={0} />
             ) : (
               <Volume2 size={20} />
             )}
@@ -258,7 +268,7 @@ export default function AudioPlayer({
         {/* Mobile Controls */}
         <div className="flex flex-row items-center gap-2">
           {/* Speed Control - Left (flex-1 centered) */}
-          <div className="flex-1 flex justify-center">
+          <div className="flex-1 flex justify-start">
             <button
               onClick={cycleSpeed}
               className="text-xs font-semibold text-custom-accent hover:opacity-70 transition cursor-pointer px-2 py-1 min-w-[50px] text-center"
@@ -278,7 +288,7 @@ export default function AudioPlayer({
           </div>
 
           {/* Volume Control - Right (flex-1 centered) */}
-          <div className="flex-1 flex justify-center items-center">
+          <div className="invisible md:visible flex-1 flex justify-end items-center">
             <div className="flex flex-row items-center gap-1">
               <button onClick={handleMute} className="text-custom-accent p-1">
                 {isMuted || volume === 0 ? (
@@ -294,10 +304,10 @@ export default function AudioPlayer({
                 step="0.1"
                 value={volume}
                 onChange={handleVolumeChange}
-                className="w-12 h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer"
+                className="w-12 min-w-[85px] h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer"
               />
             </div>
-          </div>
+          </div> 
 
           {/* Download Button - Right side (flex-1 centered) */}
           {allowDownload && (
