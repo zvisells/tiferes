@@ -11,6 +11,7 @@ export default function AdminSettingsPage() {
   const [pin, setPin] = useState('');
   const [pinConfirm, setPinConfirm] = useState('');
   const [sponsorLink, setSponsorLink] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -37,6 +38,7 @@ export default function AdminSettingsPage() {
       if (response.ok) {
         const data = await response.json();
         setSponsorLink(data.sponsor_link || 'https://abcharity.org/Yehadis');
+        setContactEmail(data.contact_email || '');
       }
     } catch (err) {
       console.error('Failed to fetch settings:', err);
@@ -90,7 +92,7 @@ export default function AdminSettingsPage() {
     }
   };
 
-  const handleSaveSponsorLink = async (e: React.FormEvent) => {
+  const handleSaveGeneral = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -100,21 +102,29 @@ export default function AdminSettingsPage() {
       return;
     }
 
+    if (!contactEmail.trim()) {
+      setError('Contact email cannot be empty');
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await fetch('/api/site-settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sponsor_link: sponsorLink }),
+        body: JSON.stringify({ 
+          sponsor_link: sponsorLink,
+          contact_email: contactEmail,
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update sponsor link');
+        throw new Error('Failed to update settings');
       }
 
-      setSuccess('Sponsor link updated successfully!');
+      setSuccess('General settings updated successfully!');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update sponsor link');
+      setError(err instanceof Error ? err.message : 'Failed to update settings');
     } finally {
       setIsLoading(false);
     }
@@ -125,98 +135,114 @@ export default function AdminSettingsPage() {
       {/* Tab Navigation */}
       <AdminTabNav />
 
-      {/* PIN Settings Card */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6 md:p-8">
-        <h2 className="text-xl font-semibold text-custom-accent mb-6">
-          Website PIN
-        </h2>
-        <p className="text-gray-600 mb-6 text-sm">
-          Set a 4-digit PIN that visitors must enter to access the website. Admin users can bypass this PIN.
-        </p>
+      {/* Settings Cards Container - flex row on desktop, column on mobile */}
+      <div className="flex flex-col md:flex-row gap-6">
+        
+        {/* PIN Settings Card - 33% width on desktop */}
+        <div className="w-full md:w-1/3 bg-white border border-gray-200 rounded-lg p-6 md:p-8">
+          <h2 className="text-xl font-semibold text-custom-accent mb-6">
+            Website PIN
+          </h2>
+          <p className="text-gray-600 mb-6 text-sm">
+            Set a 4-digit PIN that visitors must enter to access the website. Admin users can bypass this PIN.
+          </p>
 
-        <form onSubmit={handleSavePin} className="space-y-4">
-          {/* New PIN */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              New PIN (4 digits)
-            </label>
-            <input
-              type="password"
-              inputMode="numeric"
-              maxLength={4}
-              value={pin}
-              onChange={(e) => {
-                const value = e.target.value.replace(/\D/g, '').slice(0, 4);
-                setPin(value);
-              }}
-              placeholder="••••"
-              className="search-input text-center text-2xl tracking-widest"
-            />
-          </div>
+          <form onSubmit={handleSavePin} className="space-y-4">
+            {/* New PIN */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                New PIN (4 digits)
+              </label>
+              <input
+                type="password"
+                inputMode="numeric"
+                maxLength={4}
+                value={pin}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '').slice(0, 4);
+                  setPin(value);
+                }}
+                placeholder="••••"
+                className="search-input text-center text-2xl tracking-widest"
+              />
+            </div>
 
-          {/* Confirm PIN */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Confirm PIN
-            </label>
-            <input
-              type="password"
-              inputMode="numeric"
-              maxLength={4}
-              value={pinConfirm}
-              onChange={(e) => {
-                const value = e.target.value.replace(/\D/g, '').slice(0, 4);
-                setPinConfirm(value);
-              }}
-              placeholder="••••"
-              className="search-input text-center text-2xl tracking-widest"
-            />
-          </div>
+            {/* Confirm PIN */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Confirm PIN
+              </label>
+              <input
+                type="password"
+                inputMode="numeric"
+                maxLength={4}
+                value={pinConfirm}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '').slice(0, 4);
+                  setPinConfirm(value);
+                }}
+                placeholder="••••"
+                className="search-input text-center text-2xl tracking-widest"
+              />
+            </div>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isLoading || pin.length !== 4 || pinConfirm.length !== 4}
-            className="btn-primary w-full mt-6"
-          >
-            {isLoading ? 'Updating...' : 'Update PIN'}
-          </button>
-        </form>
-      </div>
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isLoading || pin.length !== 4 || pinConfirm.length !== 4}
+              className="btn-primary w-full mt-6"
+            >
+              {isLoading ? 'Updating...' : 'Update PIN'}
+            </button>
+          </form>
+        </div>
 
-      {/* Sponsor Link Settings Card */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6 md:p-8">
-        <h2 className="text-xl font-semibold text-custom-accent mb-6">
-          Sponsor a Shiur Link
-        </h2>
-        <p className="text-gray-600 mb-6 text-sm">
-          Set the URL for the "Sponsor a Shiur" button shown to users.
-        </p>
+        {/* General Settings Card - 33% width on desktop */}
+        <div className="w-full md:w-1/3 bg-white border border-gray-200 rounded-lg p-6 md:p-8">
+          <h2 className="text-xl font-semibold text-custom-accent mb-6">
+            General Settings
+          </h2>
 
-        <form onSubmit={handleSaveSponsorLink} className="space-y-4">
-          {/* Sponsor Link */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Sponsor Link URL
-            </label>
-            <input
-              type="url"
-              value={sponsorLink}
-              onChange={(e) => setSponsorLink(e.target.value)}
-              placeholder="https://example.com/sponsor"
-              className="search-input"
-            />
-          </div>
+          <form onSubmit={handleSaveGeneral} className="space-y-4">
+            {/* Sponsor Link */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Sponsor a Shiur Link
+              </label>
+              <input
+                type="url"
+                value={sponsorLink}
+                onChange={(e) => setSponsorLink(e.target.value)}
+                placeholder="https://example.com/sponsor"
+                className="search-input"
+              />
+            </div>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isLoading || !sponsorLink.trim()}
-            className="btn-primary w-full mt-6"
-          >
-            {isLoading ? 'Updating...' : 'Update Sponsor Link'}
-          </button>
-        </form>
+            {/* Contact Email */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Contact Form Email
+              </label>
+              <input
+                type="email"
+                value={contactEmail}
+                onChange={(e) => setContactEmail(e.target.value)}
+                placeholder="contact@example.com"
+                className="search-input"
+              />
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isLoading || !sponsorLink.trim() || !contactEmail.trim()}
+              className="btn-primary w-full mt-6"
+            >
+              {isLoading ? 'Updating...' : 'Save Settings'}
+            </button>
+          </form>
+        </div>
+
       </div>
 
       {/* Error Message */}

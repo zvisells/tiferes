@@ -17,11 +17,11 @@ export async function GET(request: NextRequest) {
 
     const { data: settings, error } = await supabase
       .from('site_settings')
-      .select('site_pin, sponsor_link')
+      .select('site_pin, sponsor_link, contact_email')
       .single();
 
     if (error) {
-      console.error('Error fetching PIN:', error);
+      console.error('Error fetching settings:', error);
       return NextResponse.json(
         { error: 'Failed to fetch settings' },
         { status: 500 }
@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
       { 
         has_pin: !!settings?.site_pin,
         sponsor_link: settings?.sponsor_link || '',
+        contact_email: settings?.contact_email || '',
       },
       { status: 200 }
     );
@@ -48,7 +49,7 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { site_pin, sponsor_link } = body;
+    const { site_pin, sponsor_link, contact_email } = body;
 
     // Validate site_pin if provided
     if (site_pin && (site_pin.length !== 4 || !/^\d+$/.test(site_pin))) {
@@ -62,6 +63,14 @@ export async function PUT(request: NextRequest) {
     if (sponsor_link && typeof sponsor_link !== 'string') {
       return NextResponse.json(
         { error: 'Sponsor link must be a valid URL string' },
+        { status: 400 }
+      );
+    }
+
+    // Validate contact_email if provided
+    if (contact_email && typeof contact_email !== 'string') {
+      return NextResponse.json(
+        { error: 'Contact email must be a valid email string' },
         { status: 400 }
       );
     }
@@ -82,6 +91,7 @@ export async function PUT(request: NextRequest) {
     const updateData: any = { id: 1 };
     if (site_pin) updateData.site_pin = site_pin;
     if (sponsor_link) updateData.sponsor_link = sponsor_link;
+    if (contact_email) updateData.contact_email = contact_email;
 
     // Update or create site settings
     const { data, error } = await supabase

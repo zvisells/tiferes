@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,9 +13,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Send email via Resend API
+    // Get contact email from site settings
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      return NextResponse.json(
+        { error: 'Database not configured' },
+        { status: 500 }
+      );
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    const { data: settings, error: settingsError } = await supabase
+      .from('site_settings')
+      .select('contact_email')
+      .single();
+
+    if (settingsError || !settings?.contact_email) {
+      console.error('Error fetching contact email:', settingsError);
+      return NextResponse.json(
+        { error: 'Contact email not configured' },
+        { status: 500 }
+      );
+    }
+
+    const adminEmail = settings.contact_email;
     const resendApiKey = process.env.RESEND_API_KEY;
-    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@tifereslmoshe.org';
 
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
