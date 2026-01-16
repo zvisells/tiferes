@@ -24,6 +24,11 @@ export default function NewShiurPage() {
   const handleFormSubmit = async (formData: FormData) => {
     setUploading(true);
     try {
+      // Check authentication state
+      const { data: sessionData } = await supabase.auth.getSession();
+      console.log('🔵 Current auth session:', sessionData.session ? 'Authenticated' : 'Not authenticated');
+      console.log('🔵 Current domain:', typeof window !== 'undefined' ? window.location.hostname : 'server');
+      
       const title = formData.get('title') as string;
       const description = formData.get('description') as string;
       const tags = (formData.get('tags') as string).split(',').map((t) => t.trim()).filter(t => t);
@@ -144,6 +149,9 @@ export default function NewShiurPage() {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
 
+      console.log('🔵 Attempting to insert shiur into Supabase...');
+      console.log('Current domain:', window.location.hostname);
+      
       const { data, error } = await supabase
         .from('shiurim')
         .insert([
@@ -163,16 +171,25 @@ export default function NewShiurPage() {
         ])
         .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Supabase insert error:', error);
+        throw new Error(`Database error: ${error.message} (Code: ${error.code})`);
+      }
+      
+      console.log('✅ Supabase insert successful:', data);
 
       setToast({ message: 'Shiur created successfully!', type: 'success' });
       setTimeout(() => {
         router.push('/');
       }, 1500);
     } catch (error) {
+      console.error('❌ Full upload error:', error);
+      console.error('Error type:', typeof error);
+      console.error('Error constructor:', error?.constructor?.name);
+      
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       setToast({ message: `Failed: ${errorMessage}`, type: 'error' });
-      setTimeout(() => setToast(null), 3000);
+      setTimeout(() => setToast(null), 5000);
     } finally {
       setUploading(false);
     }
