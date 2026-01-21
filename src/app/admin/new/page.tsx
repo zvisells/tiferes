@@ -144,19 +144,41 @@ export default function NewShiurPage() {
         });
       });
 
-      const slug = title
+      // Generate base slug
+      let slug = title
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
 
+      // Check if slug exists and append number if needed
+      let finalSlug = slug;
+      let counter = 1;
+      let slugExists = true;
+
+      while (slugExists) {
+        const { data: existingShiur } = await supabase
+          .from('shiurim')
+          .select('slug')
+          .eq('slug', finalSlug)
+          .maybeSingle();
+
+        if (!existingShiur) {
+          slugExists = false;
+        } else {
+          counter++;
+          finalSlug = `${slug}-${counter}`;
+        }
+      }
+
       console.log('🔵 Attempting to insert shiur into Supabase...');
+      console.log('🔵 Generated unique slug:', finalSlug);
       console.log('Current domain:', window.location.hostname);
       
       const { data, error } = await supabase
         .from('shiurim')
         .insert([
           {
-            slug,
+            slug: finalSlug,
             title,
             description,
             tags,
