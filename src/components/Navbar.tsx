@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { Menu, X, LogOut, Settings, Calendar, Info } from 'lucide-react';
@@ -97,6 +97,11 @@ export default function Navbar() {
   const handleDiscourseLeave = () => {
     discourseTimeout.current = setTimeout(() => setDiscourseOpen(false), 300);
   };
+
+  const handleNavFilterChange = useCallback((f: { searchQuery: string; selectedParsha?: string }) => {
+    setSearchQuery(f.searchQuery);
+    setSelectedParsha(f.selectedParsha || '');
+  }, [setSearchQuery, setSelectedParsha]);
 
   if (isAdminLoginPage) return null;
 
@@ -207,10 +212,7 @@ export default function Navbar() {
             <SearchBar
               variant="navbar"
               onSearchChange={isHomePage ? setSearchQuery : undefined}
-              onFilterChange={isHomePage ? (f) => {
-                setSearchQuery(f.searchQuery);
-                setSelectedParsha(f.selectedParsha || '');
-              } : undefined}
+              onFilterChange={isHomePage ? handleNavFilterChange : undefined}
               initialSearch={searchQuery}
               initialParsha={selectedParsha}
             />

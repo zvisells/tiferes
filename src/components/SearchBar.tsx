@@ -79,18 +79,14 @@ export default function SearchBar({
     }
   }, [isHomePage, searchQuery, navigateToHome]);
 
-  const handleFilterChange = useCallback(() => {
-    if (isHomePage) {
-      onFilterChange?.({
+  useEffect(() => {
+    if (isHomePage && onFilterChange) {
+      onFilterChange({
         searchQuery,
         selectedParsha: selectedParsha || undefined,
       });
     }
-  }, [searchQuery, selectedParsha, onFilterChange, isHomePage]);
-
-  useEffect(() => {
-    handleFilterChange();
-  }, [searchQuery, selectedParsha, handleFilterChange]);
+  }, [searchQuery, selectedParsha]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const isNavbar = variant === 'navbar';
 
