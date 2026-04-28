@@ -92,10 +92,10 @@ export async function POST(request: NextRequest) {
     console.log(`📥 Received upload request: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
 
     // Get Cloudflare credentials
-    const cfAccessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
-    const cfSecretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
-    const cfBucketName = process.env.CLOUDFLARE_R2_BUCKET_NAME;
-    const cfAccountId = process.env.CLOUDFLARE_R2_ACCOUNT_ID;
+    const cfAccessKeyId = process.env.CLOUDFLARE_ACCESS_KEY_ID || process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
+    const cfSecretAccessKey = process.env.CLOUDFLARE_SECRET_ACCESS_KEY || process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
+    const cfBucketName = process.env.CLOUDFLARE_BUCKET_NAME || process.env.CLOUDFLARE_R2_BUCKET_NAME;
+    const cfAccountId = process.env.CLOUDFLARE_ACCOUNT_ID || process.env.CLOUDFLARE_R2_ACCOUNT_ID;
     const cfR2Url = process.env.NEXT_PUBLIC_CLOUDFLARE_R2_URL;
 
     if (!cfAccessKeyId || !cfSecretAccessKey || !cfBucketName || !cfAccountId || !cfR2Url) {

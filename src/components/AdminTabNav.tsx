@@ -9,6 +9,16 @@ export default function AdminTabNav() {
   return (
     <div className="flex flex-row gap-2 border-b border-gray-200">
       <Link
+        href="/admin/new"
+        className={`px-6 py-3 font-semibold transition border-b-2 ${
+          pathname === '/admin/new'
+            ? 'text-custom-accent border-custom-accent'
+            : 'border-transparent text-gray-600 hover:text-custom-accent'
+        }`}
+      >
+        New Shiur
+      </Link>
+      <Link
         href="/admin/pages"
         className={`px-6 py-3 font-semibold transition border-b-2 ${
           pathname === '/admin/pages'

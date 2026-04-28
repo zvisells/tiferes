@@ -24,6 +24,7 @@ body {
 
 main {
   overflow: visible;
+  animation: fadeIn 0.4s ease-out;
 }
 
 body {
@@ -34,11 +35,14 @@ body {
 /* Heading fonts - Castoro */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-castoro);
+  letter-spacing: -0.02em;
 }
 
 /* Body fonts - Poppins */
 body, p, span, div, a, button {
   font-family: var(--font-poppins);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Smooth page transitions */
@@ -70,11 +74,21 @@ body, p, span, div, a, button {
 
 /* Custom utility classes */
 .audio-card {
-  @apply flex flex-col gap-4 p-4 md:p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow;
+  @apply flex flex-col gap-4 p-4 md:p-6 rounded-2xl border border-gray-200 transition-all duration-300 hover:shadow-lg;
 }
 
 .navbar {
   @apply sticky top-0 z-40 w-full border-b;
+}
+
+.nav-gradient {
+  background: radial-gradient(ellipse at 50% 0%, #052848 0%, #001f3f 80%);
+}
+
+@media (min-width: 768px) {
+  .nav-gradient {
+    background: radial-gradient(ellipse at 30% 0%, #052848 0%, #001f3f 80%);
+  }
 }
 
 .filter-bar {
@@ -97,23 +111,92 @@ body, p, span, div, a, button {
   @apply px-4 py-2 rounded-lg font-semibold border border-black text-black hover:bg-black hover:text-white transition;
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
+/* Nav link underline animation */
+.nav-link {
+  position: relative;
+  padding-bottom: 2px;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 0;
+  height: 2px;
+  background: white;
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+.nav-link.active::after {
+  width: 100%;
+}
+
+/* Hide scrollbar entirely for specific elements */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Inner elements: thin auto-hide scrollbar */
+body *:not(html) {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+html.is-scrolling body * {
+  scrollbar-color: #b0b0b0 transparent;
+}
+
+body *::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+body *::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+body *::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 3px;
+}
+
+html.is-scrolling body *::-webkit-scrollbar-thumb {
+  background: #b0b0b0;
+}
+
+html.is-scrolling body *::-webkit-scrollbar-thumb:hover {
+  background: #888;
+}
+
+/* Page-level scrollbar — always visible */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #aaa transparent;
+}
+
+html::-webkit-scrollbar {
   width: 8px;
-  height: 8px;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--color-bg);
+html::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-::-webkit-scrollbar-thumb {
-  background: var(--color-accent);
+html::-webkit-scrollbar-thumb {
+  background: #aaa;
   border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-accent);
-  opacity: 0.8;
+html::-webkit-scrollbar-thumb:hover {
+  background: #888;
 }
 

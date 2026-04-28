@@ -29,3 +29,14 @@ yarn-error.log*
 # Vercel
 .vercel
 
+# Credentials / backups
+env-backup.txt
+
+# Binary / design assets
+*.m4a
+*.ai
+
+# Duplicate content assets (originals live in public/)
+content/logo.pdf
+content/shul.jpg
+

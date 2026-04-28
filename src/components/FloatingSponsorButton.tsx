@@ -27,7 +27,7 @@ export default function FloatingSponsorButton() {
       href={sponsorLink}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-6 right-6 z-40 flex flex-row items-center gap-2 px-4 py-3 rounded-lg font-semibold bg-custom-accent text-white hover:opacity-90 transition shadow-lg hover:shadow-xl"
+      className="fixed bottom-6 right-6 z-40 flex flex-row items-center gap-2 px-5 py-3 rounded-full font-semibold bg-custom-accent text-white border border-white/10 hover:shadow-xl transition-all duration-300 shadow-lg"
       title="Sponsor a Shiur"
     >
       <Heart size={18} fill="currentColor" />

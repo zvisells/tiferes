@@ -21,8 +21,6 @@
     "noImplicitAny": true,
     "strictNullChecks": true,
     "strictFunctionTypes": true,
-    "declaration": true,
-    "declarationMap": true,
     "sourceMap": true,
     "baseUrl": ".",
     "paths": {

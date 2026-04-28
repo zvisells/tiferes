@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import AdminForm from '@/components/AdminForm';
+import AdminTabNav from '@/components/AdminTabNav';
+import { MediaType, detectMediaType } from '@/lib/types';
 
 export default function NewShiurPage() {
   const router = useRouter();
@@ -37,14 +39,28 @@ export default function NewShiurPage() {
       const allowDownload = formData.get('allowDownload') === 'true';
       const imageFile = formData.get('image') as File | null;
       const audioFile = formData.get('audio') as File | null;
+      const mediaType = (formData.get('mediaType') as MediaType) || 
+        (audioFile ? detectMediaType(audioFile) : 'audio');
 
       let imageUrl: string | null = null;
       let audioUrl: string | null = null;
 
       // Helper to upload file via presigned URL with progress tracking (bypasses Vercel limits)
+      const uploadViaServer = async (file: File, fileType: string): Promise<string> => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('fileType', fileType);
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || 'Server upload failed');
+        }
+        const data = await res.json();
+        return data.url;
+      };
+
       const uploadWithPresignedUrl = async (file: File, fileType: string): Promise<string> => {
         try {
-          // Step 1: Request presigned URL from backend (tiny request)
           const response = await fetch(
             `/api/upload?filename=${encodeURIComponent(file.name)}&fileType=${fileType}`
           );
@@ -53,11 +69,9 @@ export default function NewShiurPage() {
           }
           const { presignedUrl, publicUrl } = await response.json();
 
-          // Step 2: Upload directly to R2 using XMLHttpRequest for progress tracking
           return new Promise<string>((resolve, reject) => {
             const xhr = new XMLHttpRequest();
 
-            // Track upload progress
             xhr.upload.addEventListener('progress', (event) => {
               if (event.lengthComputable) {
                 const percentComplete = Math.round((event.loaded / event.total) * 100);
@@ -65,7 +79,6 @@ export default function NewShiurPage() {
               }
             });
 
-            // Handle completion
             xhr.addEventListener('load', () => {
               if (xhr.status === 200) {
                 setUploadProgress(0);
@@ -76,7 +89,6 @@ export default function NewShiurPage() {
               }
             });
 
-            // Handle errors
             xhr.addEventListener('error', () => {
               setUploadProgress(0);
               reject(new Error('Upload failed: network error'));
@@ -87,7 +99,6 @@ export default function NewShiurPage() {
               reject(new Error('Upload cancelled'));
             });
 
-            // Set up and send request
             xhr.open('PUT', presignedUrl);
             xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
             xhr.send(file);
@@ -95,6 +106,14 @@ export default function NewShiurPage() {
         } catch (error) {
           setUploadProgress(0);
           throw error;
+        }
+      };
+
+      const uploadFile = async (file: File, fileType: string): Promise<string> => {
+        try {
+          return await uploadWithPresignedUrl(file, fileType);
+        } catch {
+          return await uploadViaServer(file, fileType);
         }
       };
 
@@ -109,19 +128,22 @@ export default function NewShiurPage() {
 
       // Upload audio (required)
       if (audioFile) {
-        audioUrl = await uploadWithPresignedUrl(audioFile, 'audio');
+        const uploadFolder = mediaType === 'video' ? 'video' : 'audio';
+        audioUrl = await uploadWithPresignedUrl(audioFile, uploadFolder);
       } else {
-        throw new Error('Audio file is required');
+        throw new Error('Audio or video file is required');
       }
 
-      // Calculate audio duration
+      // Calculate duration from the media file
       const duration = await new Promise<string>((resolve) => {
-        const audio = new Audio();
+        const el = mediaType === 'video'
+          ? document.createElement('video')
+          : new Audio();
         const url = URL.createObjectURL(audioFile!);
-        audio.src = url;
+        el.src = url;
 
         const handleMetadata = () => {
-          const totalSeconds = Math.floor(audio.duration);
+          const totalSeconds = Math.floor(el.duration);
           const hours = Math.floor(totalSeconds / 3600);
           const minutes = Math.floor((totalSeconds % 3600) / 60);
           const seconds = totalSeconds % 60;
@@ -137,12 +159,69 @@ export default function NewShiurPage() {
           URL.revokeObjectURL(url);
         };
 
-        audio.addEventListener('loadedmetadata', handleMetadata);
-        audio.addEventListener('error', () => {
+        el.addEventListener('loadedmetadata', handleMetadata);
+        el.addEventListener('error', () => {
           resolve('--:--');
           URL.revokeObjectURL(url);
         });
       });
+
+      // Auto-generate thumbnail from video first frame if no image was provided
+      if (mediaType === 'video' && !imageFile && audioFile) {
+        try {
+          const thumbBlob = await new Promise<Blob | null>((resolve) => {
+            const video = document.createElement('video');
+            video.muted = true;
+            video.playsInline = true;
+            video.preload = 'auto';
+            const url = URL.createObjectURL(audioFile);
+            video.src = url;
+
+            video.addEventListener('loadeddata', () => {
+              video.currentTime = 0.1;
+            });
+
+            video.addEventListener('seeked', () => {
+              try {
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                  canvas.toBlob(
+                    (blob) => {
+                      URL.revokeObjectURL(url);
+                      resolve(blob);
+                    },
+                    'image/jpeg',
+                    0.85
+                  );
+                } else {
+                  URL.revokeObjectURL(url);
+                  resolve(null);
+                }
+              } catch {
+                URL.revokeObjectURL(url);
+                resolve(null);
+              }
+            });
+
+            video.addEventListener('error', () => {
+              URL.revokeObjectURL(url);
+              resolve(null);
+            });
+          });
+
+          if (thumbBlob) {
+            const thumbFile = new File([thumbBlob], 'thumbnail.jpg', { type: 'image/jpeg' });
+            imageUrl = await uploadFile(thumbFile, 'image');
+            console.log('✅ Auto-generated video thumbnail uploaded');
+          }
+        } catch (err) {
+          console.warn('Could not auto-generate video thumbnail:', err);
+        }
+      }
 
       // Generate base slug
       let slug = title
@@ -185,6 +264,7 @@ export default function NewShiurPage() {
             parsha,
             image_url: imageUrl,
             audio_url: audioUrl,
+            media_type: mediaType,
             timestamps,
             allow_download: allowDownload,
             duration,
@@ -218,7 +298,7 @@ export default function NewShiurPage() {
   };
 
   return (
-    <div className="flex flex-col gap-8 p-4 md:p-6 max-w-2xl mx-auto py-8">
+    <div className="flex flex-col gap-8 p-4 md:p-6 max-w-4xl mx-auto py-8">
       {/* Toast Notification */}
       {toast && (
         <div
@@ -230,8 +310,8 @@ export default function NewShiurPage() {
         </div>
       )}
 
-
-      <h1 className="text-4xl font-bold text-custom-accent">Create New Shiur</h1>
+      <AdminTabNav />
+      <h1 className="text-3xl font-bold text-custom-accent">Create New Shiur</h1>
       <AdminForm onSubmit={handleFormSubmit} isLoading={uploading} uploadProgress={uploadProgress} />
     </div>
   );

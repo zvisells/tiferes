@@ -20,6 +20,19 @@ export async function logoutAdmin() {
   }
 }
 
+export async function resetPassword(email: string) {
+  const response = await fetch('/api/reset-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.error || 'Failed to send reset email');
+  }
+}
+
 export async function getCurrentAdmin() {
   const { data, error } = await supabase.auth.getSession();
   if (error) {
