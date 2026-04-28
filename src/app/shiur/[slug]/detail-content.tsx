@@ -11,6 +11,7 @@ import { Tag, Edit2, Check, X, Trash2, Heart, Share2, Eye } from 'lucide-react';
 import { getParshiaList } from '@/lib/parshiot';
 import PopularShiurim from '@/components/PopularShiurim';
 import DropZone from '@/components/DropZone';
+import { logUpload } from '@/lib/uploadLogger';
 
 export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shiur }) {
   const router = useRouter();
@@ -182,6 +183,16 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
 
       // Upload new audio file if provided
       if (mediaFile) {
+        logUpload({
+          shiurTitle: editedData.title,
+          fileName: mediaFile.name,
+          fileType: mediaFile.type,
+          fileSize: mediaFile.size,
+          mediaType: (newMediaType || detectMediaType(mediaFile)),
+          status: 'started',
+          uploadMethod: 'presigned-edit',
+        });
+
         try {
           const uploadFolder = (newMediaType || detectMediaType(mediaFile)) === 'video' ? 'video' : 'audio';
           const mediaUrl = await uploadWithProgress(mediaFile, uploadFolder);
@@ -220,7 +231,28 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
           });
 
           updateData.duration = duration;
+
+          logUpload({
+            shiurTitle: editedData.title,
+            fileName: mediaFile.name,
+            fileType: mediaFile.type,
+            fileSize: mediaFile.size,
+            mediaType: (newMediaType || detectMediaType(mediaFile)),
+            status: 'success',
+            uploadMethod: 'presigned-edit',
+          });
         } catch (error) {
+          const msg = error instanceof Error ? error.message : 'Unknown error';
+          logUpload({
+            shiurTitle: editedData.title,
+            fileName: mediaFile.name,
+            fileType: mediaFile.type,
+            fileSize: mediaFile.size,
+            mediaType: (newMediaType || detectMediaType(mediaFile)),
+            status: 'failed',
+            errorMessage: msg,
+            uploadMethod: 'presigned-edit',
+          });
           console.error('Media upload failed:', error);
         }
       }

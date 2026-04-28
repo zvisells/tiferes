@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabaseClient';
 import AdminForm from '@/components/AdminForm';
 import AdminTabNav from '@/components/AdminTabNav';
 import { MediaType, detectMediaType } from '@/lib/types';
+import { logUpload } from '@/lib/uploadLogger';
 
 export default function NewShiurPage() {
   const router = useRouter();
@@ -25,25 +26,34 @@ export default function NewShiurPage() {
 
   const handleFormSubmit = async (formData: FormData) => {
     setUploading(true);
+
+    const title = formData.get('title') as string;
+    const description = formData.get('description') as string;
+    const tags = (formData.get('tags') as string).split(',').map((t) => t.trim()).filter(t => t);
+    const parsha = formData.get('parsha') as string;
+    const timestamps = JSON.parse(formData.get('timestamps') as string);
+    const allowDownload = formData.get('allowDownload') === 'true';
+    const imageFile = formData.get('image') as File | null;
+    const audioFile = formData.get('audio') as File | null;
+    const mediaType = (formData.get('mediaType') as MediaType) || 
+      (audioFile ? detectMediaType(audioFile) : 'audio');
+
     try {
-      // Check authentication state
       const { data: sessionData } = await supabase.auth.getSession();
       console.log('🔵 Current auth session:', sessionData.session ? 'Authenticated' : 'Not authenticated');
-      console.log('🔵 Current domain:', typeof window !== 'undefined' ? window.location.hostname : 'server');
-      
-      const title = formData.get('title') as string;
-      const description = formData.get('description') as string;
-      const tags = (formData.get('tags') as string).split(',').map((t) => t.trim()).filter(t => t);
-      const parsha = formData.get('parsha') as string;
-      const timestamps = JSON.parse(formData.get('timestamps') as string);
-      const allowDownload = formData.get('allowDownload') === 'true';
-      const imageFile = formData.get('image') as File | null;
-      const audioFile = formData.get('audio') as File | null;
-      const mediaType = (formData.get('mediaType') as MediaType) || 
-        (audioFile ? detectMediaType(audioFile) : 'audio');
 
       let imageUrl: string | null = null;
       let audioUrl: string | null = null;
+
+      logUpload({
+        shiurTitle: title,
+        fileName: audioFile?.name,
+        fileType: audioFile?.type,
+        fileSize: audioFile?.size,
+        mediaType,
+        status: 'started',
+        uploadMethod: 'presigned',
+      });
 
       // Helper to upload file via presigned URL with progress tracking (bypasses Vercel limits)
       const uploadViaServer = async (file: File, fileType: string): Promise<string> => {
@@ -280,16 +290,35 @@ export default function NewShiurPage() {
       
       console.log('✅ Supabase insert successful:', data);
 
+      logUpload({
+        shiurTitle: title,
+        fileName: audioFile?.name,
+        fileType: audioFile?.type,
+        fileSize: audioFile?.size,
+        mediaType,
+        status: 'success',
+        uploadMethod: 'presigned',
+      });
+
       setToast({ message: 'Shiur created successfully!', type: 'success' });
       setTimeout(() => {
         router.push('/');
       }, 1500);
     } catch (error) {
-      console.error('❌ Full upload error:', error);
-      console.error('Error type:', typeof error);
-      console.error('Error constructor:', error?.constructor?.name);
-      
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+      logUpload({
+        shiurTitle: title,
+        fileName: audioFile?.name,
+        fileType: audioFile?.type,
+        fileSize: audioFile?.size,
+        mediaType,
+        status: 'failed',
+        errorMessage,
+        uploadMethod: 'presigned',
+      });
+
+      console.error('❌ Full upload error:', error);
       setToast({ message: `Failed: ${errorMessage}`, type: 'error' });
       setTimeout(() => setToast(null), 5000);
     } finally {
