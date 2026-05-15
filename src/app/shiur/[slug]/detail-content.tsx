@@ -12,6 +12,7 @@ import { getParshiaList } from '@/lib/parshiot';
 import PopularShiurim from '@/components/PopularShiurim';
 import DropZone from '@/components/DropZone';
 import { logUpload } from '@/lib/uploadLogger';
+import { shouldUseMultipart, multipartUpload } from '@/lib/multipartUpload';
 
 export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shiur }) {
   const router = useRouter();
@@ -138,6 +139,14 @@ export default function ShiurDetailContent({ shiur: initialShiur }: { shiur: Shi
 
       // Helper to upload file with progress tracking
       const uploadWithProgress = async (file: File, fileType: string): Promise<string> => {
+        if (shouldUseMultipart(file)) {
+          return await multipartUpload({
+            file,
+            fileType,
+            onProgress: setUploadProgress,
+          });
+        }
+
         return new Promise<string>((resolve, reject) => {
           // Get presigned URL first
           fetch(`/api/upload?filename=${encodeURIComponent(file.name)}&fileType=${fileType}`)

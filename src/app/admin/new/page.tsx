@@ -7,6 +7,7 @@ import AdminForm from '@/components/AdminForm';
 import AdminTabNav from '@/components/AdminTabNav';
 import { MediaType, detectMediaType } from '@/lib/types';
 import { logUpload } from '@/lib/uploadLogger';
+import { shouldUseMultipart, multipartUpload } from '@/lib/multipartUpload';
 
 export default function NewShiurPage() {
   const router = useRouter();
@@ -52,7 +53,7 @@ export default function NewShiurPage() {
         fileSize: audioFile?.size,
         mediaType,
         status: 'started',
-        uploadMethod: 'presigned',
+        uploadMethod: audioFile && shouldUseMultipart(audioFile) ? 'multipart' : 'presigned',
       });
 
       // Helper to upload file via presigned URL with progress tracking (bypasses Vercel limits)
@@ -120,6 +121,13 @@ export default function NewShiurPage() {
       };
 
       const uploadFile = async (file: File, fileType: string): Promise<string> => {
+        if (shouldUseMultipart(file)) {
+          return await multipartUpload({
+            file,
+            fileType,
+            onProgress: setUploadProgress,
+          });
+        }
         try {
           return await uploadWithPresignedUrl(file, fileType);
         } catch {
@@ -130,7 +138,7 @@ export default function NewShiurPage() {
       // Upload image if provided
       if (imageFile) {
         try {
-          imageUrl = await uploadWithPresignedUrl(imageFile, 'image');
+          imageUrl = await uploadFile(imageFile, 'image');
         } catch (error) {
           console.warn('Image upload failed, continuing without image:', error);
         }
@@ -139,7 +147,7 @@ export default function NewShiurPage() {
       // Upload audio (required)
       if (audioFile) {
         const uploadFolder = mediaType === 'video' ? 'video' : 'audio';
-        audioUrl = await uploadWithPresignedUrl(audioFile, uploadFolder);
+        audioUrl = await uploadFile(audioFile, uploadFolder);
       } else {
         throw new Error('Audio or video file is required');
       }
@@ -297,7 +305,7 @@ export default function NewShiurPage() {
         fileSize: audioFile?.size,
         mediaType,
         status: 'success',
-        uploadMethod: 'presigned',
+        uploadMethod: audioFile && shouldUseMultipart(audioFile) ? 'multipart' : 'presigned',
       });
 
       setToast({ message: 'Shiur created successfully!', type: 'success' });
@@ -315,7 +323,7 @@ export default function NewShiurPage() {
         mediaType,
         status: 'failed',
         errorMessage,
-        uploadMethod: 'presigned',
+        uploadMethod: audioFile && shouldUseMultipart(audioFile) ? 'multipart' : 'presigned',
       });
 
       console.error('❌ Full upload error:', error);
